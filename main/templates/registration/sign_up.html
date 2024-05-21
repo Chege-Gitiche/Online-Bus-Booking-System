@@ -2,9 +2,28 @@
 {%block title %}Sign up{%endblock%}
 {%load crispy_forms_tags %}
 {%block content%}
+
+<style>
+    form{
+        width: 500px;
+        height: auto;
+        padding: 20px 20px 20px 20px;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        margin: 50px auto;
+        border-radius: 10px;
+    }
+    form p{
+        text-align: center;
+    }
+
+    form h3{
+        text-align: center
+    }
+</style>
 <form method="post">
 {% csrf_token %}{{form|crispy}}
 <p>Have an account? Login <a href="/login">Here</a></p>
-<button type="submit" class="btn btn-success">Register</button>
+<center><button type="submit" class="btn btn-success">Register</button></center>
+
 </form>
 {%endblock%}

@@ -6,10 +6,16 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="/login")
 def index(request):
-    return render(request, "main/base.html")
+    return render(request, "main/home.html")
+
+def home(request):
+    return render(request,'main/base.html')
 
 
 def sign_up(request):
