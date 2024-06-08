@@ -45,6 +45,23 @@ Install the required dependencies from the requirements.txt file:
 pip install -r requirements.txt
 ### 4. Create the .env File
 Create a .env file in the root directory of the project. This file will contain your confidential information. 
+
+SECRET_KEY=YOUR_SECRET_KEY
+
+DEBUG=True
+
+EMAIL_HOST_USER= YOUR_EMAIL_HOST_USER
+
+EMAIL_HOST_PASSWORD= YOUR_EMAIL_HOST_PASSWORD
+
+GOOGLE_CLIENT_ID= YOUR_SECRET_CLIENT_ID
+
+GOOGLE_CLIENT_SECRET= YOUR_GOOGLE_CLIENT_SECRET
+
+GITHUB_SECRET= GITHUB_SECRET_INFO
+
+GITHUB_CLIENT_ID=YOUR_CLIENT_ID
+
 ### 5. Set Up PostgreSQL Database
 Create a PostgreSQL database. This will have all the tables relating to the project and a schema will be created. The name of the database is BusBooking.
 ### 6. Update Settings
