@@ -5,8 +5,7 @@ from .models import OtpToken
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth.models import User
-
- 
+from .models import Profile
  
 @receiver(post_save, sender=User) 
 def create_token(sender, instance, created, **kwargs):
@@ -44,4 +43,13 @@ def create_token(sender, instance, created, **kwargs):
                 receiver,
                 fail_silently=False,
             )
+        
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
   

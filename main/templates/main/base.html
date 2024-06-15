@@ -18,20 +18,29 @@
                     </li>
                 </ul>
             </div>
-            <div>
-                <ul class="navbar-nav">
-                    {%if user.is_authenticated%}
-                    <span class="navbar-text">Logged in as {{user.username}}</span>
-                    <li class="nav-itme">
-                        <a class="nav-link" href="/logout">Logout</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-itme">
-                        <a class="nav-link" href="/login">Login</a>
-                    </li>
-                    {% endif %}
-                </ul>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                <div class="mr-3">
+                    <!-- Profile picture with dropdown -->
+                    <div class="dropdown">
+                        <img src="{% if user.profile.picture %}{{ user.profile.picture.url }}{% else %}placeholder.jpg{% endif %}" class="rounded-circle dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 50px; height: 50px;" alt="Profile Picture">
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="#">Account Settings</a>
+                            <a class="dropdown-item" href="/logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <!-- Username -->
+                    <span class="navbar-text">{{ user.username }}</span>
+                </div>
+                {% else %}
+                <div>
+                    <a class="nav-link" href="/login">Login</a>
+                </div>
+                {% endif %}
             </div>
+            
         </div>
     </nav>
             <div class="containeri-fluid">
@@ -44,3 +53,4 @@
     crossorigin="anonymous"></script>
   </body>
 </html>
+

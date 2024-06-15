@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import RegisterForm
+from .forms import RegisterForm, LoginForm
 from .models import OtpToken
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -18,7 +18,7 @@ def home(request):
     return render(request,'main/base.html')
 
 
-def sign_up(request):
+def signUp(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -30,7 +30,7 @@ def sign_up(request):
     return render(request,'registration/sign_up.html',{"form":form})
 
 
-def verify_email(request, username):
+def verifyEmail(request, username):
     user = get_user_model().objects.get(username=username)
     user_otp = OtpToken.objects.filter(user=user).last()
     
@@ -61,7 +61,7 @@ def verify_email(request, username):
     return render(request, "verify_token.html", context)
 
 
-def resend_otp(request):
+def resendOtp(request):
     
     if request.method == 'POST':
         
@@ -106,7 +106,7 @@ def resend_otp(request):
 
 
 
-def signin(request):
+def signIn(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -124,7 +124,7 @@ def signin(request):
     return render(request, "login.html")
 
 
-def login_view(request):
+def loginView(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
