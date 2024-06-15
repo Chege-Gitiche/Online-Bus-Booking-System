@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import OtpToken, Profile, Schedule, Route, Bus, Booking, CustomerServiceRequest, Notification, UserNotification, Communication, Feedback, Payment, RealTimeUpdates
-# Register your models here.
+# Register all your models here.
 
 admin.site.register(OtpToken)
 admin.site.register(Profile)
