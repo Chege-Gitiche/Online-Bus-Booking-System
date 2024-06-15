@@ -19,7 +19,7 @@ def create_token(sender, instance, created, **kwargs):
             instance.save()
         
         
-        # email credentials
+        # setting email credentials
         otp = OtpToken.objects.filter(user=instance).last()
        
        
