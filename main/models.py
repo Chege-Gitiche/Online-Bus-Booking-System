@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, User
 from django.contrib.auth import get_user_model
 from django.conf import settings
 import secrets
+from django.utils import timezone
 # Create your models here.
 
 class OtpToken(models.Model):
@@ -14,4 +15,190 @@ class OtpToken(models.Model):
     
     def __str__(self):
         return self.user.username
+
+# Profile model
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    id_user = models.IntegerField(unique=True, editable=False)
+    phone_number = models.CharField(max_length=15, blank=True)
+    profileimg = models.ImageField(upload_to = 'profile_images', default='blank-profile-picture.png')
+
+    def __str__(self):
+        return self.user.username
     
+# Bus Model
+class Bus(models.Model):
+    BUS_TYPE_CHOICES = [
+        ('Economy', 'Economy'),
+        ('Business', 'Business'),
+    ]
+
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Maintenance', 'Maintenance'),
+    ]
+
+    busID = models.CharField(max_length=20, unique=True, editable=False)
+    busNumber = models.CharField(max_length=20)
+    capacity = models.PositiveIntegerField()
+    type = models.CharField(max_length=20, choices=BUS_TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+    def __str__(self):
+        return self.busNumber
+
+# Route Model
+class Route(models.Model):
+    routeID = models.CharField(max_length=20, unique=True, editable=False)
+    origin = models.CharField(max_length=100)
+    destination = models.CharField(max_length=100)
+    distance = models.FloatField()
+    fare = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f'{self.origin} to {self.destination}'
+
+# Schedule Model
+class Schedule(models.Model):
+    scheduleID = models.AutoField(primary_key=True, editable=False)
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    departureTime = models.TimeField()
+    arrivalTime = models.TimeField()
+    date = models.DateField()
+
+    def __str__(self):
+        return f'Schedule {self.scheduleID} for Bus {self.bus.busNumber}'
+
+    
+# Booking model
+class Booking(models.Model):
+    STATUS_CHOICES = [
+        ('Confirmed', 'Confirmed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    bookingID = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    scheduleID = models.ForeignKey(Schedule, on_delete=models.CASCADE)
+    seatNumber = models.CharField(max_length=10)
+    bookingDate = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='confirmed')
+    totalPrice = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.bookingID
+
+# Payment model
+class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('mpesa', 'Mpesa'),
+        ('paypal', 'PayPal'),
+    ]
+
+    paymentID = models.AutoField(primary_key=True, editable=False)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    totalAmount = models.DecimalField(max_digits=10, decimal_places=2)
+    paymentMethod = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    paymentDate = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Payment {self.paymentID}'
+
+# Feedback model
+class Feedback(models.Model):
+    feedbackID = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField()
+    comments = models.TextField(blank=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Feedback {self.feedbackID}'
+# UserNotifications model
+class UserNotification(models.Model):
+    STATUS_CHOICES = [
+        ('sent', 'Sent'),
+        ('queued', 'Queued'),
+    ]
+
+    userNotificationID = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    message = models.TextField()
+    notificationDate = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification {self.userNotificationID}'
+
+# Notification model
+class Notification(models.Model):
+    NOTIFICATION_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+    ]
+
+    notificationID = models.AutoField(primary_key=True, editable=False)
+    userNotification = models.ForeignKey(UserNotification, on_delete=models.CASCADE)
+    notificationType = models.CharField(max_length=10, choices=NOTIFICATION_TYPE_CHOICES)
+    message = models.TextField()
+    dateSent = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification {self.notificationID}'
+
+# Customer Service Requests model
+class CustomerServiceRequest(models.Model):
+    STATUS_CHOICES = [
+        ('opened', 'Opened'),
+        ('resolved', 'Resolved'),
+    ]
+
+    requestID = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    subjectMatter = models.CharField(max_length=255)
+    description = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='opened')
+    requestDate = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Request {self.requestID}'
+
+# Communication model
+class Communication(models.Model):
+    COMMUNICATION_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+    ]
+
+    communicationID = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    type = models.CharField(max_length=10, choices=COMMUNICATION_TYPE_CHOICES)
+    message = models.TextField()
+    communicationDate = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Communication {self.communicationID}'
+    
+# Realtime Updates
+class RealTimeUpdates(models.Model):
+    STATUS_CHOICES = [
+        ('ontime', 'On Time'),
+        ('delayed', 'Delayed'),
+    ]
+
+    updateID = models.AutoField(primary_key=True, editable=False)
+    bookingID = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    message = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    def __str__(self):
+        return f'RealTimeUpdate {self.updateID}'
+
+
+
+
+    
+
