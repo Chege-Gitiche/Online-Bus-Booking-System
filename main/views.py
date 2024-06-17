@@ -13,10 +13,12 @@ from .models import Profile
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
 def index(request):
-    return render(request, "main/home.html")
+    user_profile = Profile.objects.get(user=request.user)
+    return render(request, "main/home.html", {'user_profile' : user_profile})
 
 def home(request):
-    return render(request,'main/base.html')
+    user_profile = Profile.objects.get(user=request.user)
+    return render(request,'main/base.html',  {'user_profile' : user_profile})
 
 
 def signUp(request):
@@ -147,6 +149,7 @@ def loginView(request):
 @login_required(login_url="/login")
 def settings(request):
     user_profile = Profile.objects.get(user=request.user)
+    print(user_profile.profile_img)
 
     if request.method == 'POST':
         if request.FILES.get('image') == None:
@@ -159,6 +162,7 @@ def settings(request):
         primary_email = request.POST.get('primary_email', '')
         secondary_email = request.POST.get('secondary_email', '')
         payment_method = request.POST.get('payment_method', '')
+        phone_number = request.POST.get('phone_number', '')
 
         user_profile.profile_img = image
         user_profile.bio = bio
@@ -166,6 +170,7 @@ def settings(request):
         user_profile.primary_email = primary_email
         user_profile.secondary_email = secondary_email
         user_profile.payment_method = payment_method
+        user_profile.phone_number = phone_number
         user_profile.save()
 
         return redirect('settings')

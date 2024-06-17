@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
     'crispy_forms',
-    'crispy_bootstrap5'
+    'crispy_bootstrap5',
+    'phonenumber_field',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -142,6 +143,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+PHONENUMBER_DEFAULT_REGION = 'KE'
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
 
 LOGOUT_REDIRECT_URL='/login'
 LOGIN_REDIRECT_URL = '/home'
