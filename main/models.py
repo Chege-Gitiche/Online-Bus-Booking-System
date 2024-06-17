@@ -19,9 +19,18 @@ class OtpToken(models.Model):
 # Profile model
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    id_user = models.IntegerField(unique=True, editable=False)
     phone_number = models.CharField(max_length=15, blank=True)
-    profileimg = models.ImageField(upload_to = 'profile_images', default='blank-profile-picture.png')
+    profile_img = models.ImageField(upload_to = 'profile_images/', default='blank-profile-picture.png')
+    address = models.CharField(max_length=255, blank=True)
+    bio = models.TextField(blank=True)
+    primary_email = models.EmailField(max_length=255, blank=True)
+    secondary_email = models.EmailField(max_length=255, blank=True)
+    PAYMENT_METHOD_CHOICES = (
+        ('mpesa', 'Mpesa'),
+        ('paypal', 'PayPal'),
+    )
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, blank=True)
+      
 
     def __str__(self):
         return self.user.username
