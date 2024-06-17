@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns= [
     path('',views.home,name='home'),
     path('home',views.index,name='index'),
+    path('settings', views.settings, name='settings'),
     path('sign_up',views.signUp,name='sign_up'),
     path("verify-email/<slug:username>", views.verifyEmail, name="verify-email"),
     path("resend-otp", views.resendOtp, name="resend-otp"),

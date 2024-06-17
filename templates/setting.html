@@ -1,0 +1,211 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'assets/images/favicon.png' %}" rel="icon" type="image/png">
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f7fafc;
+            color: #4a5568;
+        }
+
+        .container {
+            max-width: 1024px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        .breadcrumb {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .form-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .form-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+
+        .form-card label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #4a5568;
+        }
+
+        .form-card input[type="text"],
+        .form-card input[type="email"],
+        .form-card textarea,
+        .form-card select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d2d6dc;
+            border-radius: 4px;
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            color: #4a5568;
+        }
+
+        .form-card input[type="file"] {
+            border: none;
+            padding: 0;
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-card input[type="text"]:focus,
+        .form-card input[type="email"]:focus,
+        .form-card textarea:focus,
+        .form-card select:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+
+        .form-card .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .form-card .button {
+            background-color: #4a90e2;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .form-card .button:hover {
+            background-color: #357dbf;
+        }
+
+        .form-card .cancel-button {
+            background-color: #ffffff;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .form-card .cancel-button:hover {
+            background-color: #ff0000;
+            color: #ffffff;
+        }
+
+        .form-card .dropdown-icon {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .form-card select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="#4a90e2" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: calc(100% - 12px);
+            background-position-y: center;
+            padding-right: 30px;
+            width: calc(100% - 32px); /* Adjusted width */
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid #d2d6dc;
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: #4a5568;
+            cursor: pointer;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-card select:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="page-title">
+            <a href="/" class="text-blue-700">Home</a> / Account Settings for <b>{{ user.username }}</b>
+        </h1>
+        <hr>
+        <div class="grid lg:grid-cols-3 gap-8 mt-12">
+            <div>
+                <h3 class="text-xl mb-4">General</h3>
+                <p class="text-gray-600">Update your account information:</p>
+            </div>
+            <div class="bg-white rounded-md lg:shadow-lg shadow col-span-2 form-card">
+                <form action="" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label for="image">Profile Image</label>
+                            <img src="{{ user_profile.profile_img.url }}" class="rounded-full w-24 h-24 mb-4" />
+                            <input type="file" name="image" class="shadow-none bg-gray-100">
+                        </div>
+                        <div class="col-span-2">
+                            <label for="bio">Bio</label>
+                            <textarea id="bio" name="bio" rows="3" class="shadow-none bg-gray-100">{{ user_profile.bio }}</textarea>
+                        </div>
+                        <div class="col-span-2">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" value="{{ user_profile.address }}" class="shadow-none bg-gray-100">
+                        </div>
+                        <div class="col-span-2">
+                            <label for="primary_email">Primary Email</label>
+                            <input type="email" id="primary_email" name="primary_email" value="{{ user_profile.primary_email }}" class="shadow-none bg-gray-100">
+                        </div>
+                        <div class="col-span-2">
+                            <label for="secondary_email">Secondary Email</label>
+                            <input type="email" id="secondary_email" name="secondary_email" value="{{ user_profile.secondary_email }}" class="shadow-none bg-gray-100">
+                        </div>
+                        <div class="col-span-2">
+                            <label for="payment_method">Payment Method</label>
+                            <select id="payment_method" name="payment_method" class="shadow-none bg-gray-100 appearance-none">
+                                <option value="mpesa" {% if user_profile.payment_method == "mpesa" %}selected{% endif %}>Mpesa</option>
+                                <option value="paypal" {% if user_profile.payment_method == "paypal" %}selected{% endif %}>PayPal</option>
+                                
+                            </select>
+                            
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="button" type="submit">Save Changes</button>
+                        <a href="/" class="cancel-button p-2 px-4 rounded">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

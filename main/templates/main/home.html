@@ -1,6 +1,24 @@
-{%extends 'main/base.html'%}
-{%block title%}Home{%endblock%}
-{%block content%}
-<h1>Home page</h1>
-<p>You are succesfully logged in</p>
-{%endblock%}
+{% extends 'main/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-4">Welcome to Online Bus Booking!</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="flex items-center justify-center">
+            <img src="static/images/homepage.jpg" alt="Bus Image" class="rounded-lg shadow-lg h-auto w-full lg:w-3/4 mx-auto" style="width: 800px; height: auto;">
+        </div>
+        <div class="flex flex-col justify-center">
+            <p class="text-lg mb-4">Book your bus tickets hassle-free with our online booking platform. Enjoy comfortable rides to your desired destinations at affordable prices.</p>
+            <ul class="list-disc list-inside mb-4">
+                <li class="mb-2">Browse through various bus routes and schedules.</li>
+                <li class="mb-2">Select your preferred seats and payment methods.</li>
+                <li class="mb-2">Receive real-time updates and notifications about your bookings.</li>
+            </ul>
+            <div class="flex justify-center">
+                <a href="#" class="btn btn-primary mr-4">Explore Bus Routes</a>
+                <a href="#" class="btn btn-secondary">View Booking History</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
