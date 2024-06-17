@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 import secrets
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 
 class OtpToken(models.Model):
@@ -19,7 +20,7 @@ class OtpToken(models.Model):
 # Profile model
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=15, blank=True)
+    phone_number = PhoneNumberField(blank=True)
     profile_img = models.ImageField(upload_to = 'profile_images/', default='blank-profile-picture.png')
     address = models.CharField(max_length=255, blank=True)
     bio = models.TextField(blank=True)
