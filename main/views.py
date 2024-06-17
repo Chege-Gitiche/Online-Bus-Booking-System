@@ -13,10 +13,12 @@ from .models import Profile
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
 def index(request):
-    return render(request, "main/home.html")
+    user_profile = Profile.objects.get(user=request.user)
+    return render(request, "main/home.html", {'user_profile' : user_profile})
 
 def home(request):
-    return render(request,'main/base.html')
+    user_profile = Profile.objects.get(user=request.user)
+    return render(request,'main/base.html',  {'user_profile' : user_profile})
 
 
 def signUp(request):
@@ -147,6 +149,7 @@ def loginView(request):
 @login_required(login_url="/login")
 def settings(request):
     user_profile = Profile.objects.get(user=request.user)
+    print(user_profile.profile_img)
 
     if request.method == 'POST':
         if request.FILES.get('image') == None:
