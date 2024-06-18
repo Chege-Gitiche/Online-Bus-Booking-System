@@ -17,8 +17,7 @@ def index(request):
     return render(request, "main/home.html", {'user_profile' : user_profile})
 
 def home(request):
-    user_profile = Profile.objects.get(user=request.user)
-    return render(request,'main/base.html',  {'user_profile' : user_profile})
+    return render(request,'main/base.html')
 
 
 def signUp(request):
@@ -126,37 +125,37 @@ def signIn(request):
         
     return render(request, "login.html")
 
-def loginView(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('index')
-            else:
-                # Authentication failed
-                # Handle error or display message
-                pass
+def login_user(request):
+    request.session['id'] = 1
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+           login(request, user)
+           
+           return redirect('index')
+        else:
+            messages.success(request, ("There Was An Error Logging In, Try Again..."))
+            return redirect('login')
     else:
-        form = LoginForm()
-    return render(request, 'login.html', {'form': form})
+        return render(request, 'registration/login.html', {})
+
+def logout_user(request):
+    logout(request)
+    request.session['id'] = 2
+    messages.success(request, ("You Were Logged Out!"))
+    return redirect('home')
 
 
 
 @login_required(login_url="/login")
 def settings(request):
     user_profile = Profile.objects.get(user=request.user)
-    print(user_profile.profile_img)
-
+    
     if request.method == 'POST':
-        if request.FILES.get('image') == None:
-            image = user_profile.profile_img
-        else:
-            image = request.FILES.get('image')
-
+        image = request.FILES.get('profile_img', user_profile.profile_img)
+        
         bio = request.POST.get('bio', '')
         address = request.POST.get('address', '')
         primary_email = request.POST.get('primary_email', '')

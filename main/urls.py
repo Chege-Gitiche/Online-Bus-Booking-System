@@ -9,6 +9,8 @@ urlpatterns= [
     path('sign_up',views.signUp,name='sign_up'),
     path("verify-email/<slug:username>", views.verifyEmail, name="verify-email"),
     path("resend-otp", views.resendOtp, name="resend-otp"),
+    path('login_user', views.login_user, name="login"),
+    path('logout_user', views.logout_user, name='logout'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
