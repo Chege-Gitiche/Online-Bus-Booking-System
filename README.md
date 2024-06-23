@@ -1,7 +1,7 @@
 # Online Bus Booking Application
 [![MIT License][mit-shield]][mit]
 
-This work is licenced under a [MIT license](https://opensource.org/licenses/MIT). Take a bow!
+This work is licenced under a [MIT license](https://opensource.org/licenses/MIT).
 
 [mit-shield]: https://img.shields.io/badge/License-MIT-blue.svg
 [mit]: https://opensource.org/licenses/MIT
