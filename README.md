@@ -25,8 +25,8 @@ The system requires the following libraries, packages, and frameworks:
 
 ### Packages to Download
 Visit these links and follow the instructions to ensure these packages are installed in one's machine. 
-1. https://www.python.org/downloads/
-2. https://www.postgresql.org/download/
+1. Python - https://www.python.org/downloads/
+2. Postgres - https://www.postgresql.org/download/
    
 ### Installation Steps of Project
 
