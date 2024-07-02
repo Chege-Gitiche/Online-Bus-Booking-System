@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import OtpToken, Profile, Schedule, Route, Bus, Booking, CustomerServiceRequest, Notification, UserNotification, Communication, Feedback, Payment, RealTimeUpdates
+from .models import OtpToken, Profile, Schedule, Route, Bus, Booking, CustomerServiceRequest, Notification, UserNotification, Communication, Feedback, Payment, RealTimeUpdates, Seat
 # Register all your models here.
 
 admin.site.register(OtpToken)
@@ -16,3 +16,4 @@ admin.site.register(Notification)
 admin.site.register(CustomerServiceRequest)
 admin.site.register(Communication)
 admin.site.register(RealTimeUpdates)
+admin.site.register(Seat)

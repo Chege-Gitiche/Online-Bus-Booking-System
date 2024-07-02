@@ -20,6 +20,15 @@
         .iti--allow-dropdown input {
             padding-left: 58px;
         }
+        .hover-bg-gray-200:hover {
+            background-color: #bfc1c5;
+        }
+        .hover-text-red-700:hover {
+            color: #b91c1c;
+        }
+        .hover-bg-blue-800:hover {
+            background-color: #05123e;
+        }
     </style>
 </head>
 
@@ -73,15 +82,19 @@
                             <input type="tel" id="phone_number" name="phone_number" value="{{ user_profile.phone_number }}" class="shadow-none bg-gray-100 p-2 border border-gray-300 rounded-lg w-full">
                         </div>
                     </div> 
-                    <div class="flex justify-center mt-6 space-x-4">
-                        <button class="button p-2 px-4 rounded bg-blue-700 text-white">
-                            <a href="/password_reset" class="text-decoration-none">Forgot your password?</a>
-                        </button>
-                        <button class="p-2 px-4 rounded bg-gray-50 text-red-500 mr-3 border border-grey-300">
-                            <a href="/">Cancel</a>
-                        </button>
-                        <button? type="submit" class="button p-2 px-4 rounded bg-blue-700 text-white">Save</button>
+
+                    <div class="flex flex-col items-center mt-6 space-y-4">
+                        <div class="space-x-4">
+                            <button class="p-2 px-4 rounded bg-gray-50 text-red-500 border border-grey-300 hover:bg-gray-200 hover:text-red-700">
+                                <a href="/">Cancel</a>
+                            </button>
+                            <button type="submit" class="p-2 px-4 rounded bg-blue-700 text-white hover:bg-blue-800">
+                                Save
+                            </button>
+                        </div>
+                        <a href="/password_reset" class="text-blue-700 hover:underline">Forgot your password?</a>
                     </div>
+                    
                 </form>
             </div>
         </div>
