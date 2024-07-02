@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        /* Add your custom styles here */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+        .top-section, .middle-section, .bottom-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .top-section {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .middle-section {
+            text-align: center;
+        }
+        .modify-form {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            align-items: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .form-control {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .route-info, .date-info {
+            margin-bottom: 15px;
+        }
+        .route-info p {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+        .date-info p {
+            font-size: 16px;
+            font-weight: 500;
+            margin: 5px 0;
+        }
+        .search-btn{
+            max-width: 100px;
+            padding: 2px 4px;
+            max-height: 50px;
+            margin-left: 30px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .departure-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .departure-table th, .departure-table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .departure-table th {
+            background-color: #f8f8f8;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .departure-table td {
+            background-color: #fefefe;
+            font-size: 16px;
+        }
+        .departure-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        .bus-info {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .bus-info h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .bus-info p {
+            margin: 5px 0;
+        }
+        @media (max-width: 768px) {
+            .top-section, .modify-form {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .form-control {
+                width: 100%;
+            }
+        }
+        .available-buses {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .card {
+            position: relative;
+            display: block;
+            box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e5e5e5;
+            background-color: #ffffff;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            box-shadow: none;
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        .card .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(250, 250, 250, 0.15);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .card .overlay:hover {
+            opacity: 1;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .card-title {
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Section -->
+        <div class="top-section">
+            <div class="left-section">
+                <div class="route-info">
+                    <p>{{ origin }} to {{ destination }}</p>
+                </div>    
+                <div class="date-info">
+                    <p>Date: {{ date }}</p>
+                </div>
+            </div>
+            <div class="modify-section">
+                <form method="POST" action="{% url 'search' %}" class="modify-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="origin" class="form-label">Origin:</label>
+                        <select name="origin" id="origin" class="form-control">
+                            {% for origin_option in origins %}
+                                <option value="{{ origin_option }}" {% if origin_option == origin %} selected {% endif %}>{{ origin_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="destination" class="form-label">Destination:</label>
+                        <select name="destination" id="destination" class="form-control">
+                            {% for destination_option in destinations %}
+                                <option value="{{ destination_option }}" {% if destination_option == destination %} selected {% endif %}>{{ destination_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date" class="form-label">Date:</label>
+                        <input type="date" id="date" name="date" class="form-control" value="{{ date }}" required>
+                    </div>
+                    <button type="submit" class="btn-primary search-btn">Search</button>
+                </form>
+            </div>
+            <div></div>
+        </div>
+
+        <!-- Middle Section -->
+        <div class="middle-section">
+            <h2>Route Information</h2>
+            <div class="route-details">
+                <p>{{ origin }} <i class="fas fa-arrow-right"></i> {{ destination }}</p>
+                <p>{{ date }}</p>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <h2>Departure Times</h2>
+            <table class="departure-table">
+                <thead>
+                    <tr>
+                        <th>Details</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td>
+                            <div class="route-info">
+                                <p>{{ schedule.route.origin }} <i class="fas fa-arrow-right"></i> {{ schedule.route.destination }}</p>
+                                <p>Departure Time: {{ schedule.departureTime }}</p>
+                                <p>Available Seats: {{ bus.capacity }}</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="total-info">
+                                <p>Total Amount: Ksh{{ schedule.route.fare }}</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h2>Available Buses</h2>
+                <div class="available-buses">
+                    {% if buses %}
+                        {% for bus in buses %}
+                            <div class="card">
+                                <div class="card-image">
+                                    <img src="https://plus.unsplash.com/premium_photo-1664302152991-d013ff125f3f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Bus Image">
+                                    <a href="{% url 'seat_selection' bus.id %}">
+                                        <div class="overlay"></div>
+                                    </a>
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title">Bus No: {{ bus.busNumber }}</h3>
+                                    <p>Bus Type: {{ bus.get_type_display }}</p>
+                                    <p>Status: {{ bus.get_status_display }}</p>
+                                    <p>Capacity: {{ bus.capacity }}</p>
+                                    <a href="{% url 'seat_selection' bus.id %}" class="btn-primary">Select Seat</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No buses available for the selected route and date.</p>
+                    {% endif %}
+                </div>
+
+    </div>
+</body>
+</html>
