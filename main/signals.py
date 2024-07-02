@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from .models import Profile
+from .models import Profile, Bus, Seat
 
 user = get_user_model()
  
@@ -53,9 +53,9 @@ def create_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
-# @receiver(post_save, sender=User)
-# def save_profile(sender, instance, **kwargs):
-#     instance.profile.save() cretea new user
-# if you had assigned it variable
+@receiver(post_save, sender=Bus, dispatch_uid='create_seats_for_bus')
+def create_seats(sender, instance, created, **kwargs):
+    if created:
+        instance.create_seats()
 
   

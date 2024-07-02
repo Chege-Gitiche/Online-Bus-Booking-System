@@ -48,8 +48,7 @@ class Bus(models.Model):
         ('Maintenance', 'Maintenance'),
     ]
 
-    busID = models.CharField(max_length=20, unique=True, editable=False)
-    busNumber = models.CharField(max_length=20)
+    busNumber = models.CharField(max_length=20, unique=True)
     capacity = models.PositiveIntegerField()
     type = models.CharField(max_length=20, choices=BUS_TYPE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
@@ -57,9 +56,22 @@ class Bus(models.Model):
     def __str__(self):
         return self.busNumber
 
+    def create_seats(self):
+        for seat_number in range(1, (self.capacity + 1)):
+            Seat.objects.create(bus=self, seat_number=str(seat_number).zfill(2))
+
+# Seats Model
+class Seat(models.Model):
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE, related_name='seats')
+    seat_number = models.CharField(max_length=10)
+    is_available = models.BooleanField(default=True)
+
+    def _str_(self):
+        return f"Seat {self.seat_number} on {self.bus.name}"
+
 # Route Model
 class Route(models.Model):
-    routeID = models.CharField(max_length=20, unique=True, editable=False)
+    routeID = models.CharField(max_length=20, unique=True)
     origin = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
     distance = models.FloatField()
@@ -70,7 +82,7 @@ class Route(models.Model):
 
 # Schedule Model
 class Schedule(models.Model):
-    scheduleID = models.AutoField(primary_key=True, editable=False)
+    scheduleID = models.AutoField(primary_key=True)
     bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     departureTime = models.TimeField()
@@ -83,21 +95,15 @@ class Schedule(models.Model):
     
 # Booking model
 class Booking(models.Model):
-    STATUS_CHOICES = [
-        ('Confirmed', 'Confirmed'),
-        ('Cancelled', 'Cancelled'),
-    ]
-
-    bookingID = models.AutoField(primary_key=True, editable=False)
+    bookingID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     scheduleID = models.ForeignKey(Schedule, on_delete=models.CASCADE)
-    seatNumber = models.CharField(max_length=10)
+    seatNumber = models.CharField(max_length=255)
     bookingDate = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='confirmed')
     totalPrice = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return self.bookingID
+        return f"Booking {self.bookingID} for {self.user} on {self.scheduleID}"
 
 # Payment model
 class Payment(models.Model):
@@ -106,7 +112,7 @@ class Payment(models.Model):
         ('paypal', 'PayPal'),
     ]
 
-    paymentID = models.AutoField(primary_key=True, editable=False)
+    paymentID = models.AutoField(primary_key=True)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     totalAmount = models.DecimalField(max_digits=10, decimal_places=2)
     paymentMethod = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
@@ -117,7 +123,7 @@ class Payment(models.Model):
 
 # Feedback model
 class Feedback(models.Model):
-    feedbackID = models.AutoField(primary_key=True, editable=False)
+    feedbackID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField()
@@ -133,7 +139,7 @@ class UserNotification(models.Model):
         ('queued', 'Queued'),
     ]
 
-    userNotificationID = models.AutoField(primary_key=True, editable=False)
+    userNotificationID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     message = models.TextField()
@@ -149,7 +155,7 @@ class Notification(models.Model):
         ('sms', 'SMS'),
     ]
 
-    notificationID = models.AutoField(primary_key=True, editable=False)
+    notificationID = models.AutoField(primary_key=True)
     userNotification = models.ForeignKey(UserNotification, on_delete=models.CASCADE)
     notificationType = models.CharField(max_length=10, choices=NOTIFICATION_TYPE_CHOICES)
     message = models.TextField()
@@ -165,7 +171,7 @@ class CustomerServiceRequest(models.Model):
         ('resolved', 'Resolved'),
     ]
 
-    requestID = models.AutoField(primary_key=True, editable=False)
+    requestID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     subjectMatter = models.CharField(max_length=255)
     description = models.TextField()
@@ -182,7 +188,7 @@ class Communication(models.Model):
         ('sms', 'SMS'),
     ]
 
-    communicationID = models.AutoField(primary_key=True, editable=False)
+    communicationID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     type = models.CharField(max_length=10, choices=COMMUNICATION_TYPE_CHOICES)
     message = models.TextField()
@@ -198,7 +204,7 @@ class RealTimeUpdates(models.Model):
         ('delayed', 'Delayed'),
     ]
 
-    updateID = models.AutoField(primary_key=True, editable=False)
+    updateID = models.AutoField(primary_key=True)
     bookingID = models.ForeignKey(Booking, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(default=timezone.now)
     message = models.TextField()

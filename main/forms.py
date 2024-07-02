@@ -20,3 +20,16 @@ class LoginForm(AuthenticationForm):
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Username'})
         self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
 
+class BookingDetailsForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    primary_email = forms.EmailField(max_length=255, required=True)
+    phone_number = forms.CharField(max_length=20, required=True)
+    address = forms.CharField(max_length=255, required=False)
+    payment_method = forms.ChoiceField(choices=Profile.PAYMENT_METHOD_CHOICES, required=True)
+
+
+    class Meta:
+        model = Profile
+        fields = ['primary_email', 'phone_number', 'address', 'payment_method']
+        

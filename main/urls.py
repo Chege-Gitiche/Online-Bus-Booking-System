@@ -10,6 +10,13 @@ urlpatterns= [
     path("verify-email/<slug:username>", views.verifyEmail, name="verify-email"),
     path("resend-otp", views.resendOtp, name="resend-otp"),
     path('login_user', views.login_user, name="login"),
+
+    path('routes/', views.routes_view, name='routes'),
+    path('search/', views.search_view, name='search'),
+
+    path('seat-selection/<int:bus_id>/', views.seat_selection_view, name='seat_selection'),
+    path('booking_details/<str:selected_seats>/', views.booking_details, name='booking_details'),
+    path('payment/<int:booking_id>/', views.payment, name='payment'),
     path('logout_user', views.logout_user, name='logout'),
     path('lockscreen', views.lockscreen, name='lockscreen'),
 

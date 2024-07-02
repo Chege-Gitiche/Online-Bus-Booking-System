@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Selection</title>
+    <style>
+        body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .center {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, rgb(171, 232, 171), rgb(235, 232, 62));
+        }
+        .tickets {
+            width: 550px;
+            height: fit-content;
+            border: 0.4mm solid rgba(0, 0, 0, 0.08);
+            border-radius: 3mm;
+            box-sizing: border-box;
+            padding: 10px;
+            font-family: poppins;
+            max-height: 96vh;
+            overflow: auto;
+            background: white;
+            box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .ticket-selector {
+            background: rgb(243, 243, 243);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        .head {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .seats {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            min-height: 150px;
+            position: relative;
+        }
+        .status {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-evenly;
+        }
+        .seats::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
+            width: 220px;
+            height: 7px;
+            background: rgb(141, 198, 255);
+            border-radius: 0 0 3mm 3mm;
+            border-top: 0.3mm solid rgb(180, 180, 180);
+        }
+        .item {
+            font-size: 12px;
+            position: relative;
+        }
+        .item::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            transform: translate(0, -50%);
+            width: 10px;
+            height: 10px;
+            background: rgb(255, 255, 255);
+            outline: 0.2mm solid rgb(120, 120, 120);
+            border-radius: 0.3mm;
+        }
+        .item:nth-child(2)::before {
+            background: rgb(180, 180, 180);
+            outline: none;
+        }
+        .item:nth-child(3)::before {
+            background: rgb(28, 185, 120);
+            outline: none;
+        }
+        .all-seats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px;
+            margin: 60px 0;
+            margin-top: 20px;
+            position: relative;
+        }
+        .seat {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 0.5mm;
+            outline: 0.3mm solid rgb(180, 180, 180);
+            cursor: pointer;
+        }
+        .seat.booked {
+            background: rgba(180, 180, 180, 0.6); /* Lighter shade for booked seats */
+            outline: none;
+        }
+        .seat.selected {
+            background-color: rgb(28, 185, 120);
+        }
+        input {
+            display: none;
+        }
+        .price {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .total {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .total span {
+            font-size: 16px;
+            font-weight: 400;
+        }
+        .price button {
+            background: rgb(60, 60, 60);
+            color: white;
+            font-family: poppins;
+            font-size: 14px;
+            padding: 7px 14px;
+            border-radius: 2mm;
+            outline: none;
+            border: none;
+            cursor: pointer;
+        }
+        .book-btn {
+            display: none; /* Hide the button initially */
+        }
+    </style>
+</head>
+<body>
+    <div class="center">
+        <div class="tickets">
+            <div class="ticket-selector">
+                <form method="post" id="seatForm">
+                    {% csrf_token %}
+                    <div class="head">
+                        <div class="title">Bus {{ bus.busNumber }}</div>
+                    </div>
+                    <div class="seats">
+                        <div class="status">
+                            <div class="item">Available</div>
+                            <div class="item">Booked</div>
+                            <div class="item">Selected</div>
+                        </div>
+                        <div class="all-seats" id="seatContainer">
+                            {% for row in seat_rows %}
+                                <div class="seat-row">
+                                    {% for seat in row %}
+                                        <input type="checkbox" id="seat{{ seat.id }}" name="seats" value="{{ seat.id }}" {% if not seat.is_available %} disabled {% endif %} {% if seat.is_booked %} disabled {% endif %}>
+                                        <label for="seat{{ seat.id }}" class="seat {% if not seat.is_available %} booked {% endif %} {% if seat.is_selected or seat.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ seat.seat_number }}</label>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                    </div>
+                    <div class="price">
+                        <div class="total">
+                            Total Amount: Ksh <span id="total-amount">0</span>
+                        </div>
+                        <button type="submit" class="book-btn">Book</button>
+                    </div>
+                    <div class="button-container" style="text-align: center; margin-top: 20px;">
+                    </div>
+                
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const seatContainer = document.getElementById('seatContainer');
+            const totalAmountElement = document.getElementById('total-amount');
+            const bookButton = document.querySelector('.book-btn');
+            const seatForm = document.getElementById('seatForm');
+            let totalAmount = 0;
+
+            seatContainer.addEventListener('change', (event) => {
+                if (event.target.matches('input[type="checkbox"]')) {
+                    const label = event.target.nextElementSibling;
+                    const fare = parseFloat(label.getAttribute('data-fare'));
+
+                    if (event.target.checked) {
+                        totalAmount += fare;
+                        label.classList.add('selected');
+                    } else {
+                        totalAmount -= fare;
+                        label.classList.remove('selected');
+                    }
+
+                    totalAmountElement.textContent = totalAmount.toFixed(2);
+
+                    // Show the book button if any seat is selected
+                    const selectedSeats = seatContainer.querySelectorAll('input[type="checkbox"]:checked');
+                    bookButton.style.display = selectedSeats.length > 0 ? 'block' : 'none';
+                }
+            });
+
+            seatForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const selectedSeats = Array.from(seatContainer.querySelectorAll('input[type="checkbox"]:checked')).map(seat => seat.value);
+                if (selectedSeats.length > 0) {
+                    seatForm.action = `{% url 'booking_details' 'seats' %}`.replace('seats', selectedSeats.join(','));
+                    seatForm.submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
