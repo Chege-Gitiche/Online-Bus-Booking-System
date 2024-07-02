@@ -155,7 +155,7 @@
             </div>
             
             <div class="button-container">
-                <button type="submit" class="button confirm-button">Confirm Booking</button>
+                <button type="submit" class="button confirm-button"><a href="{% url 'booking'%}">Confirm booking</a></button>
                 <a href="{% url 'seat_selection' bus_id=selected_seats.first.bus.id %}" class="button back-button">Back</a>
             </div>
         </form>

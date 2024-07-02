@@ -20,6 +20,8 @@ urlpatterns= [
     path('logout_user', views.logout_user, name='logout'),
     path('lockscreen', views.lockscreen, name='lockscreen'),
 
+    path('booking', views.booking, name='booking'),
+
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
 ]

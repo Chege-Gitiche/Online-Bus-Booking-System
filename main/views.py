@@ -10,6 +10,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from .models import Profile, Route, Schedule, Bus, Seat, Booking
+from django.http import HttpResponse
+from django_daraja.mpesa.core import MpesaClient
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
@@ -312,5 +314,22 @@ def lockscreen(request):
             messages.error(request, 'Invalid password')
     return render(request, 'lockscreen.html')
 
+def booking(request):
+    cl = MpesaClient()
+    # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
+    phone_number = '0114679087'
+    amount = 1
+    account_reference = 'reference'
+    transaction_desc = 'Description'
+    callback_url = 'https://darajambili.herokuapp.com/express-payment';
+    response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
 
+     # Check the response status code to determine success or failure
+    if response.status_code == 200:  # Adjust based on your MpesaClient implementation
+        messages.success(request, "Payment request sent successfully.")
+    else:
+        messages.error(request, "Payment request failed.")
+
+    # Redirect to booking.html or any other appropriate page
+    return render(request, 'booking.html')  # Replace 'booking_page' with your actual URL name
 
