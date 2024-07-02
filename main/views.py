@@ -176,3 +176,17 @@ def settings(request):
 
     return render(request, 'setting.html', {'user_profile': user_profile})
 
+@login_required
+def lockscreen(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = authenticate(username=request.user.username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('index')  # Redirect to the desired page
+        else:
+            messages.error(request, 'Invalid password')
+    return render(request, 'lockscreen.html')
+
+
+

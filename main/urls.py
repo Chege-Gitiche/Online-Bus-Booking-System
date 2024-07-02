@@ -11,6 +11,7 @@ urlpatterns= [
     path("resend-otp", views.resendOtp, name="resend-otp"),
     path('login_user', views.login_user, name="login"),
     path('logout_user', views.logout_user, name='logout'),
+    path('lockscreen', views.lockscreen, name='lockscreen'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

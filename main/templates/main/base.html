@@ -22,6 +22,7 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                     
                       <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="{{  user.profile.profile_img.url }}" class="rounded-circle" alt="" style="width: 40px; height: 40px; margin-right: 10px;">
@@ -30,8 +31,10 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                           <li><a class="dropdown-item" href="{% url 'settings' %}">Account Settings</a></li>
                           <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                          <li><a class="dropdown-item" href="{% url 'lockscreen' %}">Lock Screen</a></li>
                         </ul>
                       </li>
+                      
                     {% else %}
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
