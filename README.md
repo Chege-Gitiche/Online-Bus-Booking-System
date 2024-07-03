@@ -69,16 +69,23 @@ Visit these links and follow the instructions to ensure these packages are insta
 
    ```
    For more information on setting up this variable refer to this videos and documentation
+
    Setting up the env file 
    [Video](https://www.youtube.com/watch?v=SOldv0p9rSU&t=201s)
    [Documentation](https://djangocentral.com/environment-variables-in-django/#:~:text=How%20to%20use%20environment%20variables%20in%20Django%201,access%20the%20environmental%20variables%20in%20our%20codebase.%20)
+
+
    Email variable setup
    [Video](https://www.youtube.com/watch?v=iGPPhzhXBFg&t=114s)
+
    [Documentation](https://dev.to/shivamrohilla/how-to-send-an-email-in-django-4pdd#:~:text=Subject%3A%20The%20subject%20of%20the%20email.%20Message%3A%20The,an%20exception%20if%20the%20email%20fails%20to%20send.)
+
+
    Postgress Variables setup
    [Video](https://www.youtube.com/watch?v=dYDoGHV-9hY)
-   [Documentation](https://medium.com/django-unleashed/complete-tutorial-set-up-postgresql-database-with-django-application-d9e789ffa384)
    
+   [Documentation](https://medium.com/django-unleashed/complete-tutorial-set-up-postgresql-database-with-django-application-d9e789ffa384)
+
 4. **Set Up the Database**:
     ```bash
     python manage.py makemigrations
