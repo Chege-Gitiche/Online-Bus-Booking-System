@@ -15,13 +15,13 @@ The Online Bus Booking Application is a web-based platform designed to streamlin
 
 The system requires the following libraries, packages, and frameworks:
 
-- **Python** - Programming language
-- **Django** - Web framework
+- **Python** - Programming language (https://www.python.org/)
+- **Django** - Web framework (https://www.djangoproject.com/)
 - **HTML** - Markup language for structuring web pages
 - **CSS** - Styling for web pages (using TailwindCSS)
-- **PostgreSQL** - Database management system
-- **PayPal SDK** - For payment integration
-- **Mpesa SDK** - For payment integration
+- **PostgreSQL** - Database management system (https://www.postgresql.org/)
+- **PayPal SDK** - For payment integration 
+- **Mpesa SDK** - For payment integration (https://developer.safaricom.co.ke/)
 
 ### Packages to Download
 Visit these links and follow the instructions to ensure these packages are installed in one's machine. 
@@ -35,13 +35,13 @@ Visit these links and follow the instructions to ensure these packages are insta
     git clone https://github.com/yourusername/online-bus-booking.git
     cd online-bus-booking
     ```
-
+    Note:You can clone the repo in the directory of your choosing
 2. **Create and Activate a Virtual Environment**:
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
-
+    Note:You must be within the directory of the project
 3. **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
@@ -56,16 +56,29 @@ Visit these links and follow the instructions to ensure these packages are insta
    EMAIL_HOST_USER= YOUR_EMAIL_HOST_USER
    
    EMAIL_HOST_PASSWORD= YOUR_EMAIL_HOST_PASSWORD
-   
-   GOOGLE_CLIENT_ID= YOUR_SECRET_CLIENT_ID
-   
-   GOOGLE_CLIENT_SECRET= YOUR_GOOGLE_CLIENT_SECRET
-   
-   GITHUB_SECRET= GITHUB_SECRET_INFO
-   
-   GITHUB_CLIENT_ID=YOUR_CLIENT_ID
-   ```
 
+   DB_NAME= YOUR_DATABASE_SCHEMA_NAME
+
+   DB_USER= YOUR_DATABASE_NAME
+
+   DB_PASSWORD= YOUR_DATABASE_PASSWORD
+
+   DB_HOST=YOUR_DATABASE_HOST
+
+   DB_PORT= YOUR_DATABASE_PORT_NUMBER
+
+   ```
+   For more information on setting up this variable refer to this videos and documentation
+   Setting up the env file 
+   [Video](https://www.youtube.com/watch?v=SOldv0p9rSU&t=201s)
+   [Documentation](https://djangocentral.com/environment-variables-in-django/#:~:text=How%20to%20use%20environment%20variables%20in%20Django%201,access%20the%20environmental%20variables%20in%20our%20codebase.%20)
+   Email variable setup
+   [Video](https://www.youtube.com/watch?v=iGPPhzhXBFg&t=114s)
+   [Documentation](https://dev.to/shivamrohilla/how-to-send-an-email-in-django-4pdd#:~:text=Subject%3A%20The%20subject%20of%20the%20email.%20Message%3A%20The,an%20exception%20if%20the%20email%20fails%20to%20send.)
+   Postgress Variables setup
+   [Video](https://www.youtube.com/watch?v=dYDoGHV-9hY)
+   [Documentation](https://medium.com/django-unleashed/complete-tutorial-set-up-postgresql-database-with-django-application-d9e789ffa384)
+   
 4. **Set Up the Database**:
     ```bash
     python manage.py makemigrations
