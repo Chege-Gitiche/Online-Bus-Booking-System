@@ -11,42 +11,45 @@ The Online Bus Booking Application is a web-based platform designed to streamlin
 
 ## Project Setup
 
-### Dependencies
+### Dependencies needed
 
-The system requires the following libraries, packages, and frameworks:
+The system requires the following libraries, packages and frameworks:
+
 
 - **Python** - Programming language (https://www.python.org/)
 - **Django** - Web framework (https://www.djangoproject.com/)
 - **HTML** - Markup language for structuring web pages
 - **CSS** - Styling for web pages (using TailwindCSS)
 - **PostgreSQL** - Database management system (https://www.postgresql.org/)
-- **PayPal SDK** - For payment integration 
 - **Mpesa SDK** - For payment integration (https://developer.safaricom.co.ke/)
 
 ### Packages to Download
-Visit these links and follow the instructions to ensure these packages are installed in one's machine. 
+Visit these links and follow the instructions to ensure these packages are installed in your machine. 
 1. Python - https://www.python.org/downloads/
 2. Postgres - https://www.postgresql.org/download/
    
 ### Installation Steps of Project
 
-1. **Clone the Repository**:
+1. **Clone the Repository to a directory of your choice**:
     ```bash
     git clone https://github.com/yourusername/online-bus-booking.git
     cd online-bus-booking
     ```
+
     Note:You can clone the repo in the directory of your choosing
 2. **Create and Activate a Virtual Environment**:
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
+
     Note:You must be within the directory of the project
 3. **Install Dependencies**:
+
     ```bash
     pip install -r requirements.txt
     ```
-4. **Create the .env File**
+4. **Create the .env File for important details**
 
    Create a .env file in the root directory of the project. This file will contain your confidential information. 
    
@@ -91,13 +94,13 @@ Visit these links and follow the instructions to ensure these packages are insta
    [Documentation](https://medium.com/django-unleashed/complete-tutorial-set-up-postgresql-database-with-django-application-d9e789ffa384)
 
 
-4. **Set Up the Database**:
+4. **Run these commands to set up database**:
     ```bash
     python manage.py makemigrations
     python manage.py migrate
     ```
 
-5. **Create a Superuser**:
+5. **Tun to create a Superuser**:
     ```bash
     python manage.py createsuperuser
     ```
