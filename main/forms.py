@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model 
-from .models import Profile
+from .models import Profile, Booking
 
 
 class RegisterForm(UserCreationForm):
@@ -32,4 +32,16 @@ class BookingDetailsForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['primary_email', 'phone_number', 'address', 'payment_method']
+
+
+
+class BookingForm(forms.ModelForm):
+    
+    user =  forms.CharField(max_length=30, required=True)
+    scheduleID =  forms.CharField(max_length=20, required=True)
+    seatNumber = forms.CharField(max_length=255, required=False)
+    totalPrice = forms.NumberInput(attrs={'class': 'form-control'})
         
+    class Meta:
+        model = Booking
+        fields = ['user', 'scheduleID' , 'seatNumber', 'totalPrice']

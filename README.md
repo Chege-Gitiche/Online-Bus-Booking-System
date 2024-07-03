@@ -68,7 +68,7 @@ Visit these links and follow the instructions to ensure these packages are insta
    DB_PORT= YOUR_DATABASE_PORT_NUMBER
 
    ```
-   For more information on setting up this variable refer to this videos and documentation
+   For more information on setting up this variable refer to this videos and documentation:
 
    Setting up the env file 
 

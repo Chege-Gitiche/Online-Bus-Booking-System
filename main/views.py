@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm , BookingForm
 from .models import OtpToken
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -12,6 +12,14 @@ from django.views.decorators.cache import cache_control
 from .models import Profile, Route, Schedule, Bus, Seat, Booking
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
+from django.views.decorators.csrf import csrf_exempt
+from .generateAcesstoken import get_access_token
+import json
+from datetime import datetime
+import base64
+import json
+import requests
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
@@ -268,15 +276,20 @@ def booking_details(request, selected_seats):
     total_amount = fare * len(selected_seat_objects)
 
     if request.method == 'POST':
-        form = BookingDetailsForm(request.POST)
+        form = BookingForm(request.POST)
         if form.is_valid():
+
+            print("Form is valid. Saving booking...")
+
             booking = Booking.objects.create(
                 user=request.user,
                 scheduleID=schedule,
                 seatNumber=seat_numbers,
                 totalPrice=total_amount
             )
-            return redirect('payment', booking_id=booking.id)
+            
+
+            return redirect('booking')
     else:
         initial_data = {
             'payment_method': user_profile.payment_method,
@@ -296,9 +309,26 @@ def booking_details(request, selected_seats):
     return render(request, 'booking_details.html', context)
 
 @login_required(login_url="/login/")
-def payment(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    return render(request, 'payment.html', {'booking': booking})
+def payment(request, booking_user):
+    cl = MpesaClient()
+    user_profile = Profile.objects.get(user=request.user)
+    # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
+    phone_number = user_profile.phone_number
+    amount = 1
+    account_reference = 'reference'
+    transaction_desc = 'Description'
+    callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+
+    if response.status_code == 200:
+        messages.success(request, 'Payment prompt sent to your phone')
+        booking.save()
+        booking = get_object_or_404(Booking, user=booking_user)
+        return render(request, 'payment.html', {'booking': booking})
+    else:
+        messages.error(request, 'Failed to send payment prompt to your phone')
+        return render(request, 'booking_details.html', context)
+    
 
 
 
@@ -316,20 +346,76 @@ def lockscreen(request):
 
 def booking(request):
     cl = MpesaClient()
+    user_profile = Profile.objects.get(user=request.user)
     # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
-    phone_number = '0114679087'
+    phone_number = user_profile.phone_number
     amount = 1
     account_reference = 'reference'
     transaction_desc = 'Description'
-    callback_url = 'https://darajambili.herokuapp.com/express-payment';
+    callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
     response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
 
-     # Check the response status code to determine success or failure
-    if response.status_code == 200:  # Adjust based on your MpesaClient implementation
-        messages.success(request, "Payment request sent successfully.")
-    else:
-        messages.error(request, "Payment request failed.")
+    if response.status_code == 200:
+        messages.success(request, 'Payment prompt sent to your phone')
+         # Retrieve booking details from session
+        booking_details = request.session.get('booking_details')
+    
+    # Print the booking details to debug
+        print("Booking Details:", booking_details)
+        payment_success = True
 
-    # Redirect to booking.html or any other appropriate page
-    return render(request, 'booking.html')  # Replace 'booking_page' with your actual URL name
+    else:
+        messages.error(request, 'Failed to send payment prompt to your phone')
+
+    return render(request, 'booking.html')
+    
+@csrf_exempt
+def mpesa_callback(request):  
+            access_token_response = get_access_token(request)
+            access_token = access_token_response.content.decode('utf-8')
+            access_token_json = json.loads(access_token)
+            access_token = access_token_json.get('access_token')
+            query_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query'
+            business_short_code = '174379'
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+            password = base64.b64encode((business_short_code + passkey + timestamp).encode()).decode()
+            checkout_request_id = 'ws_CO_04072023004444401768168060'
+
+            query_headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token
+            }
+
+            query_payload = {
+                'BusinessShortCode': business_short_code,
+                'Password': password,
+                'Timestamp': timestamp,
+                'CheckoutRequestID': checkout_request_id
+            }
+            
+            try:
+                response = requests.post(query_url, headers=query_headers, json=query_payload)
+                response.raise_for_status()
+                # Raise exception for non-2xx status codes
+                response_data = response.json()
+                
+                if 'ResultCode' in response:
+                    result_code = response['ResultCode']
+                    if result_code == '1037':
+                        message = "1037 Timeout in completing transaction"
+                    elif result_code == '1032':
+                        message = "1032 Transaction has been canceled by the user"
+                    elif result_code == '1':
+                        message = "1 The balance is insufficient for the transaction"
+                    elif result_code == '0':
+                        message = "0 The transaction was successful"
+                    else:
+                        message = "Unknown result code: " + result_code
+                else:
+                    message = "Error in response"
+                
+                return JsonResponse({'message': message})  # Return JSON response
+            except Exception as e:
+                return JsonResponse({'error': 'Error: ' + str(e)})  # Return JSON response for any other error
 

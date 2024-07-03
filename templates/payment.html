@@ -7,6 +7,15 @@
 </head>
 <body>
     <h1>Payment Details</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+              <div class="alert alert-{{message.tags}}" role="alert" style="margin-top: 30px">
+                <h5>{{message}}</h5>
+              </div>
+            {% endfor %}
+        </ul>
+    {% endif %}
     <p>Booking ID: {{ booking.id }}</p>
     <p>Total Amount: {{ booking.totalPrice }}</p>
     <!-- Add more payment details as needed -->

@@ -1,10 +1,14 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Search Results{% endblock %}
+{% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <style>
         /* Add your custom styles here */
@@ -305,3 +309,5 @@
     </div>
 </body>
 </html>
+
+{% endblock content %}
