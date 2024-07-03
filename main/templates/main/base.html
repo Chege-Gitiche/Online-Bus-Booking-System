@@ -22,23 +22,21 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                     
-                      <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{  user.profile.profile_img.url }}" class="rounded-circle" alt="" style="width: 40px; height: 40px; margin-right: 10px;">
-                            {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                          <li><a class="dropdown-item" href="{% url 'settings' %}">Account Settings</a></li>
-                          <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-                          <li><a class="dropdown-item" href="{% url 'lockscreen' %}">Lock Screen</a></li>
-                        </ul>
-                      </li>
-                      
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ user.profile.profile_img.url }}" class="rounded-circle" alt="" style="width: 40px; height: 40px; margin-right: 10px;">
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'settings' %}">Account Settings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lockscreen' %}">Lock Screen</a></li>
+                            </ul>
+                        </li>
                     {% else %}
-                      <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                      </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>
@@ -46,34 +44,33 @@
     </nav>
 
     <div class="container-fluid">
-        
         {% block content %}
-        <section id="hero-area" >
+        <section id="hero-area">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12 text-center">
                         <div class="block wow fadeInUp" data-wow-delay=".3s">
                             <!-- Slider -->
                             <section class="cd-intro">
-                                <h1 class="wow fadeInUp animated cd-headline slide" data-wow-delay=".4s" >
-                                <span>One stop to take you to</span><br>
-                                <span class="cd-words-wrapper">
-                                    <b class="is-visible">Nairobi</b>
-                                    <b>Kisumu</b>
-                                    <b>Nakuru</b>
-                                    <b>all over the country</b>
-                                </span>
+                                <h1 class="wow fadeInUp animated cd-headline slide" data-wow-delay=".4s">
+                                    <span>One stop to take you to</span><br>
+                                    <span class="cd-words-wrapper">
+                                        <b class="is-visible">Nairobi</b>
+                                        <b>Kisumu</b>
+                                        <b>Nakuru</b>
+                                        <b>all over the country</b>
+                                    </span>
                                 </h1>
-                                </section> <!-- cd-intro -->
-                                <!-- /.slider -->
-                                
-                                <a class="btn-lines dark light wow fadeInUp animated smooth-scroll btn btn-default btn-green" data-wow-delay=".9s" href="/sign_up" data-section="#works">Sign up</a>
-                                <a class="btn-lines dark light wow fadeInUp animated smooth-scroll btn btn-default btn-green" data-wow-delay=".9s" href="#works" data-section="#works">Book trip</a>
-                            </div>
+                            </section> <!-- cd-intro -->
+                            <!-- /.slider -->
+                            
+                            <a class="btn-lines dark light wow fadeInUp animated smooth-scroll btn btn-default btn-green" data-wow-delay=".9s" href="/sign_up" data-section="#works">Sign up</a>
+                            <a class="btn-lines dark light wow fadeInUp animated smooth-scroll btn btn-default btn-green" data-wow-delay=".9s" href="#works" data-section="#works">Book trip</a>
                         </div>
                     </div>
                 </div>
-            </section><!--/#main-slider-->
+            </div>
+        </section><!--/#main-slider-->
         {% endblock %}
     </div>
 

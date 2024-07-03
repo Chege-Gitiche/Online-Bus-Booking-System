@@ -11,13 +11,24 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from .models import Profile, Route, Schedule, Bus, Seat, Booking
 from django.http import HttpResponse
-from django_daraja.mpesa.core import MpesaClient
+from django.views import View
+import json
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
 def index(request):
-    user_profile = Profile.objects.get(user=request.user)
-    return render(request, "main/home.html", {'user_profile' : user_profile})
+    if request.user.is_superuser:
+        # Redirect superuser to admin_template or handle differently as needed
+        return redirect('admin_template')
+    
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        # Handle case where user profile doesn't exist
+        messages.error(request, "User profile not found.")
+        return redirect('index')  # Redirect to regular home or handle appropriately
+    
+    return render(request, "main/home.html", {'user_profile': user_profile})
 
 def home(request):
     return render(request,'main/base.html')
@@ -129,26 +140,69 @@ def signIn(request):
     return render(request, "login.html")
 
 def login_user(request):
-    request.session['id'] = 1
+    request.session['id'] = 1  
+    
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
-           login(request, user)
-           
-           return redirect('index')
+            login(request, user)
+            
+            if user.is_superuser:
+                return redirect('admin_template')  # Replace with your admin template URL name
+            else:
+                return redirect('index')  # Replace with your home template URL name
         else:
-            messages.success(request, ("There Was An Error Logging In, Try Again..."))
+            messages.error(request, "There was an error logging in. Please try again.")
             return redirect('login')
+    
     else:
         return render(request, 'registration/login.html', {})
 
+
+@login_required
+def admin(request):
+    # Ensure only superusers can access this view
+    if not request.user.is_superuser:
+        # Redirect to regular home page or handle unauthorized access
+        messages.error(request, "You are not authorized to view this page.")
+        return redirect('index')
+
+    total_users = Profile.objects.count()
+    total_buses = Bus.objects.count()
+    total_routes = Route.objects.count()
+    total_schedules = Schedule.objects.count()
+    buses = Bus.objects.all()
+    bus_data = {
+        "labels": [bus.busNumber for bus in buses],
+        "data": [bus.capacity for bus in buses],
+    }
+
+    context = {
+        'total_users': total_users,
+        'total_buses': total_buses,
+        'total_routes': total_routes,
+        'total_schedules': total_schedules,
+        'bus_data': json.dumps(bus_data),
+    }
+
+    return render(request, 'admin_template.html', context)
+
 def logout_user(request):
-    logout(request)
-    request.session['id'] = 2
-    messages.success(request, ("You Were Logged Out!"))
-    return redirect('home')
+    if request.user.is_superuser:
+        # Logic for superuser logout
+        # For example, redirect to admin dashboard or a different page
+        logout(request)
+        messages.success(request, "Admin Logged Out Successfully.")
+        return redirect('home')  # Replace 'admin_dashboard' with your admin dashboard URL name
+    else:
+        # Logic for normal user logout
+        # For example, redirect to home page
+        logout(request)
+        messages.success(request, "You Were Logged Out Successfully.")
+        return redirect('home')  # Replace 'home' with your home page URL name
 
 @login_required(login_url="/login")
 def settings(request):
@@ -163,6 +217,7 @@ def settings(request):
         secondary_email = request.POST.get('secondary_email', '')
         payment_method = request.POST.get('payment_method', '')
         phone_number = request.POST.get('phone_number', '')
+        gender = request.POST.get('gender', '')
 
         user_profile.profile_img = image
         user_profile.bio = bio
@@ -171,11 +226,123 @@ def settings(request):
         user_profile.secondary_email = secondary_email
         user_profile.payment_method = payment_method
         user_profile.phone_number = phone_number
+        user_profile.gender = gender
         user_profile.save()
 
         return redirect('settings')
 
     return render(request, 'setting.html', {'user_profile': user_profile})
+
+#dashboard
+@login_required(login_url="/login")
+def users(request):
+    profiles = Profile.objects.select_related('user').all()
+
+    context = {
+        'profiles': profiles,
+    }
+
+    return render(request, 'users.html', context)
+
+@login_required(login_url="/login")
+def routes_admin(request):
+    routes = Route.objects.all()
+
+    context = {
+        'routes': routes,
+    }
+
+    return render(request, 'routes_admin.html', context)
+
+@login_required(login_url="/login")
+def buses(request):
+    buses = Bus.objects.all()
+
+    context = {
+        'buses': buses,
+    }
+
+    return render(request, 'buses.html', context)
+
+@login_required(login_url="/login")
+def schedules(request):
+    schedules = Schedule.objects.all()
+
+    context = {
+        'schedules':schedules,
+    }     
+
+    return render(request, 'schedule.html', context)
+
+def gender(request):
+    # Count the number of each gender in the system
+    male_count = Profile.objects.filter(gender='male').count()
+    female_count = Profile.objects.filter(gender='female').count()
+    other_count = Profile.objects.filter(gender='other').count()
+
+    # Prepare data for the chart
+    gender_data = {
+        'labels': ['Male', 'Female', 'Other'],
+        'data': [male_count, female_count, other_count]
+    }
+
+    return render(request, 'gender.html', {'gender_data': gender_data})
+def add_user(request):
+    if request.method == 'POST':
+        # Handle form submission
+        username = request.POST.get('username')
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address')
+        primary_email = request.POST.get('primary_email')
+
+        # Create a new profile instance
+        Profile.objects.create(
+            user=request.user,  # assuming you have user authenticated and available in request
+            payment_method=payment_method,
+            address=address,
+            primary_email=primary_email
+        )
+
+        # Redirect to a success page or another view
+        return redirect('users')  # assuming 'users' is a URL pattern name for the users list page
+
+    # If not a POST request, render the form
+    return render(request, 'add_user.html')
+
+def add_schedule(request):
+    if request.method == 'POST':
+        form = ScheduleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('schedule_list')  # Redirect to a view showing all schedules
+    else:
+        form = ScheduleForm()
+    
+    return render(request, 'add_schedule.html', {'form': form})
+
+def add_bus(request):
+    if request.method == 'POST':
+        form = BusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('buses')  # Redirect to a view showing all buses
+    else:
+        form = BusForm()
+    
+    return render(request, 'add_bus.html', {'form': form})
+
+def add_route(request):
+    if request.method == 'POST':
+        form = RouteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('route_admin')  # Redirect to a view showing all routes
+    else:
+        form = RouteForm()
+    
+    return render(request, 'add_route.html', {'form': form})
+
+#customer views
 
 @login_required(login_url="/login")
 def routes_view(request):

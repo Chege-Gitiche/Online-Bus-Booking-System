@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'assets/images/favicon.png' %}" rel="icon" type="image/png">
+    <title>Gender Distribution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-10 p-5 bg-white rounded-lg shadow-lg max-w-4xl">
+        <h1 class="text-3xl font-bold leading-none text-gray-900 tracking-tight mt-3 mb-6 text-center">Gender Distribution</h1>
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:40vh; width:80%">
+                            <canvas id="genderDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Print -->
+    <pre>{{ gender_data|safe }}</pre>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var genderData = JSON.parse('{{ gender_data|escapejs }}');
+            console.log(genderData); // Check the console for parsed data
+            var ctx = document.getElementById('genderDistributionChart').getContext('2d');
+            var genderDistributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: genderData.labels,
+                    datasets: [{
+                        label: 'Gender Distribution',
+                        data: genderData.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Gender'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

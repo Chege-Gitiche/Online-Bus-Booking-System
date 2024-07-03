@@ -7,6 +7,8 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 
+
+
 class OtpToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")
     otp_code = models.CharField(max_length=6, default=secrets.token_hex(3))
@@ -21,7 +23,7 @@ class OtpToken(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = PhoneNumberField(blank=True)
-    profile_img = models.ImageField(upload_to = 'profile_images/', default='blank-profile-picture.png')
+    profile_img = models.ImageField(upload_to='profile_images/', default='blank-profile-picture.png')
     address = models.CharField(max_length=255, blank=True)
     bio = models.TextField(blank=True)
     primary_email = models.EmailField(max_length=255, blank=True)
@@ -31,7 +33,13 @@ class Profile(models.Model):
         ('paypal', 'PayPal'),
     )
     payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, blank=True)
-      
+    
+    GENDER_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    )
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
 
     def __str__(self):
         return self.user.username

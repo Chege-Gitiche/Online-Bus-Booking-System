@@ -40,13 +40,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_tools_stats',  # this must be BEFORE 'admin_tools' and 'django.contrib.admin'
-    'django_nvd3',
-    'django_light',
-    'admin_tools',
-    'admin_tools.theming',
-    'admin_tools.menu',
-    'admin_tools.dashboard',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,7 +50,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'phonenumber_field',
-    'django_daraja',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -80,18 +72,13 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates' )],
-        #'APP_DIRS': True,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
-           'loaders': [
-                'admin_tools.template_loaders.Loader',  # Make sure this is at the beginning
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
             ],
         },
     },
@@ -105,18 +92,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-
-            'NAME': os.getenv('DB_NAME'),
-
-            'USER': os.getenv('DB_USER'),
-
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-
-            'HOST': os.getenv('DB_HOST'),
-
-            'PORT': os.getenv('DB_PORT'),
-}
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -163,8 +141,10 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 PHONENUMBER_DEFAULT_REGION = 'KE'
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
@@ -182,43 +162,3 @@ EMAIL_USE_TLS=True
 EMAIL_PORT = 587
 
 PASSWORD_RESET_FORM = 'main/templates/registration/password_reset_form.html'
-
-ADMIN_TOOLS_INDEX_DASHBOARD = 'backend.dashboard.CustomIndexDashboard'
-
-MPESA_ENVIRONMENT = 'sandbox'
-
-# Credentials for the daraja app
-
-MPESA_CONSUMER_KEY = 'nhCUnCKLL7Lqulu7pihdkxXeMSGnUMpCCirIJaZe9dOtf8v1'
-MPESA_CONSUMER_SECRET = 'sXKDXSzfgwkogCirI0lAezP29JQJGyhYxWSDGmwbu9RYz9tBaaL9SzcxEczPScLs'
-
-#Shortcode to use for transactions. For sandbox  use the Shortcode 1 provided on test credentials page
-
-MPESA_SHORTCODE = '174379'
-
-# Shortcode to use for Lipa na MPESA Online (MPESA Express) transactions
-# This is only used on sandbox, do not set this variable in production
-# For sandbox use the Lipa na MPESA Online Shorcode provided on test credentials page
-
-MPESA_EXPRESS_SHORTCODE = '174379'
-
-# Type of shortcode
-# Possible values:
-# - paybill (For Paybill)
-# - till_number (For Buy Goods Till Number)
-
-MPESA_SHORTCODE_TYPE = 'paybill'
-
-# Lipa na MPESA Online passkey
-# Sandbox passkey is available on test credentials page
-# Production passkey is sent via email once you go live
-
-MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-
-# Username for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
-
-MPESA_INITIATOR_USERNAME = 'testapi'
-
-# Plaintext password for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
-
-MPESA_INITIATOR_SECURITY_CREDENTIAL = 'Safaricom999!*!'
