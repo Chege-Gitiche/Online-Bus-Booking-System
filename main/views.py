@@ -274,6 +274,7 @@ def schedules(request):
 
     return render(request, 'schedule.html', context)
 
+
 def gender(request):
     # Count the number of each gender in the system
     male_count = Profile.objects.filter(gender='male').count()
@@ -286,7 +287,11 @@ def gender(request):
         'data': [male_count, female_count, other_count]
     }
 
-    return render(request, 'gender.html', {'gender_data': gender_data})
+    # Convert gender_data to JSON string
+    gender_data_json = json.dumps(gender_data)
+
+    return render(request, 'gender.html', {'gender_data': gender_data_json})
+
 def add_user(request):
     if request.method == 'POST':
         # Handle form submission
@@ -357,14 +362,19 @@ def search_view(request):
         date = request.POST.get('date')
 
         try:
-            # Query schedules based on the selected origin, destination, and date
-            schedules = Schedule.objects.filter(route__origin=origin, route__destination=destination, date=date)
+            # Query schedules based on the selected origin, destination, and date, and filter active buses
+            schedules = Schedule.objects.filter(
+                route__origin=origin, 
+                route__destination=destination, 
+                date=date,
+                bus__status='Active'  # Ensure only active buses are considered
+            )
 
             if schedules.exists():
                 # Calculate total amount
                 total_amount = sum(schedule.route.fare for schedule in schedules)
 
-                # Retrieve buses associated with the schedules
+                # Retrieve active buses associated with the schedules
                 buses = [schedule.bus for schedule in schedules]
 
                 return render(request, 'search.html', {
@@ -389,6 +399,7 @@ def search_view(request):
         routes = Route.objects.all()
         return render(request, 'routes.html', {'routes': routes})
 
+
 @login_required
 def seat_selection_view(request, bus_id):
     bus = get_object_or_404(Bus, id=bus_id)
@@ -398,25 +409,34 @@ def seat_selection_view(request, bus_id):
     
     # Fetch seats associated with the bus
     seats = Seat.objects.filter(bus=bus)
-    # Organize seats into rows, assuming 4 seats per row as per your template
+    
+    # Organize seats into rows, with 4 seats per row
     seat_rows = []
     row = []
     for index, seat in enumerate(seats):
         row.append(seat)
-        if (index + 1) % 4 == 0:  # Assuming 4 seats per row
+        if (index + 1) % 4 == 0:  # 4 seats per row
             seat_rows.append(row)
             row = []
     if row:
         seat_rows.append(row)
     
-    if request.method == 'POST':
-        selected_seats = request.POST.getlist('seats')
-        if selected_seats:
-            selected_seats_str = ','.join(selected_seats)
-            # return redirect('booking_details', selected_seats=selected_seats_str)
-            return redirect("booking_details/"+str(slec))
+    # Adjust the last row to join the seats at the back
+    if seat_rows:
+        last_row = seat_rows[-1]
+        if len(last_row) == 3:
+            # Add an extra seat to join the last row
+            last_row.append(last_row[-1])
     
-    return render(request, 'seat_selection.html', {'seat_rows': seat_rows, 'bus': bus, 'fare': fare, 'origin': route.origin, 'destination': route.destination, 'total_amount': fare})
+    if request.method == 'POST':
+        selected_seats_str = request.POST.get('selected_seats', '')
+        if selected_seats_str:
+            selected_seats = selected_seats_str.split(',')
+            # Redirect to booking details or process selected seats
+            return redirect('booking_details', selected_seats=selected_seats)
+    
+    return render(request, 'seat_selection.html', {'seat_rows': seat_rows, 'bus': bus, 'fare': fare})
+
 
 @login_required(login_url="/login/")
 def booking_details(request, selected_seats):

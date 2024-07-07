@@ -13,7 +13,7 @@ urlpatterns= [
     path('add_bus/', views.add_bus, name='add_bus'),
     path('add_route/', views.add_route, name='add_route'),
 
-    path('gender', views.gender, name='gender'),
+    path('gender/', views.gender, name='gender'),
     path('routes_admin', views.routes_admin, name='routes_admin'),
     path('buses', views.buses, name='buses'),
     path('schedule', views.schedules, name='schedule'),
