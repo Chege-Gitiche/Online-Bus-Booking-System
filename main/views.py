@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm
 from .models import OtpToken
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -244,6 +244,67 @@ def users(request):
 
     return render(request, 'users.html', context)
 
+def add_user(request):
+    if request.method == 'POST':
+        # Handle form submission
+        username = request.POST.get('username')
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address')
+        primary_email = request.POST.get('primary_email')
+
+        # Assuming 'request.user' gives the authenticated user instance
+        user_instance = request.user
+
+        # Create a new profile instance
+        Profile.objects.create(
+            user=user_instance,
+            payment_method=payment_method,
+            address=address,
+            primary_email=primary_email
+        )
+
+        # Redirect to a success page or another view
+        return redirect('users')  # Redirect to users list page, adjust the name as per your URLconf
+
+    # If not a POST request, render the form
+    return render(request, 'add_user.html')
+
+def edit_user(request, pk):
+    profile = get_object_or_404(Profile, pk=pk)
+    user_instance = profile.user  # Retrieve the related User instance
+
+    if request.method == 'POST':
+        # Handle form submission
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address')
+        primary_email = request.POST.get('primary_email')
+
+        # Update profile fields
+        profile.payment_method = payment_method
+        profile.address = address
+        profile.primary_email = primary_email
+        profile.save()
+
+        # Redirect to a success page or another view
+        return redirect('users')  # Redirect to users list page, adjust the name as per your URLconf
+
+    # If not a POST request, render the form with pre-filled data
+    return render(request, 'edit_user.html', {'profile': profile})
+
+def delete_user(request, pk):
+    profile = get_object_or_404(Profile, pk=pk)
+    user = profile.user
+
+    if request.method == 'POST':
+        # Perform deletion
+        user.delete()
+        # Optionally, delete associated profile if needed
+        profile.delete()
+        return redirect('users')  # Redirect to users list page after deletion
+
+    # Handle GET request (optional: render confirmation template or redirect)
+    return redirect('users')  # Redirect to users list page if not POST
+
 @login_required(login_url="/login")
 def routes_admin(request):
     routes = Route.objects.all()
@@ -255,6 +316,61 @@ def routes_admin(request):
     return render(request, 'routes_admin.html', context)
 
 @login_required(login_url="/login")
+def add_route(request):
+    if request.method == 'POST':
+        route_id = request.POST.get('routeID')
+        origin = request.POST.get('origin')
+        destination = request.POST.get('destination')
+        distance = request.POST.get('distance')
+        fare = request.POST.get('fare')
+
+        Route.objects.create(
+            routeID=route_id,
+            origin=origin,
+            destination=destination,
+            distance=distance,
+            fare=fare
+        )
+
+        return redirect('routes_admin')
+
+    return render(request, 'add_route.html')
+
+@login_required(login_url="/login")
+def edit_route(request, route_id):
+    route = get_object_or_404(Route, routeID=route_id)
+
+    if request.method == 'POST':
+        route.routeID = request.POST.get('routeID')
+        route.origin = request.POST.get('origin')
+        route.destination = request.POST.get('destination')
+        route.distance = request.POST.get('distance')
+        route.fare = request.POST.get('fare')
+        route.save()
+
+        return redirect('routes_admin')
+
+    context = {
+        'route': route,
+    }
+    return render(request, 'edit_route.html', context)
+
+@login_required(login_url="/login")
+def delete_route(request, route_id):
+    route = get_object_or_404(Route, routeID=route_id)
+
+    if request.method == 'POST':
+        route.delete()
+        return redirect('routes')
+
+    context = {
+        'route': route,
+    }
+    return render(request, 'delete_route.html', context)
+
+
+
+@login_required(login_url="/login")
 def buses(request):
     buses = Bus.objects.all()
 
@@ -264,15 +380,118 @@ def buses(request):
 
     return render(request, 'buses.html', context)
 
+def add_bus(request):
+    if request.method == 'POST':
+        form = BusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('buses')  # Redirect to a view showing all buses
+    else:
+        form = BusForm()
+    
+    return render(request, 'add_bus.html', {'form': form})
+
+def edit_bus(request, pk):
+    bus = get_object_or_404(Bus, pk=pk)
+    if request.method == 'POST':
+        form = BusForm(request.POST, instance=bus)
+        if form.is_valid():
+            form.save()
+            return redirect('buses')  # Redirect to buses list page after editing bus
+    else:
+        form = BusForm(instance=bus)
+    
+    return render(request, 'edit_bus.html', {'form': form, 'bus': bus})
+
+def delete_bus(request, pk):
+    bus = get_object_or_404(Bus, pk=pk)
+    if request.method == 'POST':
+        bus.delete()
+        return redirect('buses')  # Redirect to buses list page after deleting bus
+    
+    return render(request, 'delete_bus.html', {'bus': bus})
+
+
 @login_required(login_url="/login")
 def schedules(request):
     schedules = Schedule.objects.all()
 
     context = {
-        'schedules':schedules,
-    }     
+        'schedules': schedules,
+    }
 
     return render(request, 'schedule.html', context)
+
+@login_required(login_url="/login")
+def add_schedule(request):
+    if request.method == 'POST':
+        bus_id = request.POST.get('bus')
+        route_id = request.POST.get('route')
+        departure_time = request.POST.get('departureTime')
+        arrival_time = request.POST.get('arrivalTime')
+        date = request.POST.get('date')
+
+        bus = Bus.objects.get(id=bus_id)
+        route = Route.objects.get(routeID=route_id)
+
+        Schedule.objects.create(
+            bus=bus,
+            route=route,
+            departureTime=departure_time,
+            arrivalTime=arrival_time,
+            date=date
+        )
+
+        return redirect('schedules')
+
+    buses = Bus.objects.all()
+    routes = Route.objects.all()
+    context = {
+        'buses': buses,
+        'routes': routes,
+    }
+    return render(request, 'add_schedule.html', context)
+
+@login_required(login_url="/login")
+def edit_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, scheduleID=schedule_id)
+
+    if request.method == 'POST':
+        bus_id = request.POST.get('bus')
+        route_id = request.POST.get('route')
+        departure_time = request.POST.get('departureTime')
+
+        bus = Bus.objects.get(id=bus_id)
+        route = Route.objects.get(routeID=route_id)
+
+        schedule.bus = bus
+        schedule.route = route
+        schedule.departureTime = departure_time
+        schedule.save()
+
+        return redirect('schedule')
+
+    buses = Bus.objects.all()
+    routes = Route.objects.all()
+    context = {
+        'schedule': schedule,
+        'buses': buses,
+        'routes': routes,
+    }
+    return render(request, 'edit_schedule.html', context)
+
+@login_required(login_url="/login")
+def delete_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, scheduleID=schedule_id)
+
+    if request.method == 'POST':
+        schedule.delete()
+        return redirect('schedule')
+
+    context = {
+        'schedule': schedule,
+    }
+    return render(request, 'delete_schedule.html', context)
 
 
 def gender(request):
@@ -292,60 +511,6 @@ def gender(request):
 
     return render(request, 'gender.html', {'gender_data': gender_data_json})
 
-def add_user(request):
-    if request.method == 'POST':
-        # Handle form submission
-        username = request.POST.get('username')
-        payment_method = request.POST.get('payment_method')
-        address = request.POST.get('address')
-        primary_email = request.POST.get('primary_email')
-
-        # Create a new profile instance
-        Profile.objects.create(
-            user=request.user,  # assuming you have user authenticated and available in request
-            payment_method=payment_method,
-            address=address,
-            primary_email=primary_email
-        )
-
-        # Redirect to a success page or another view
-        return redirect('users')  # assuming 'users' is a URL pattern name for the users list page
-
-    # If not a POST request, render the form
-    return render(request, 'add_user.html')
-
-def add_schedule(request):
-    if request.method == 'POST':
-        form = ScheduleForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('schedule_list')  # Redirect to a view showing all schedules
-    else:
-        form = ScheduleForm()
-    
-    return render(request, 'add_schedule.html', {'form': form})
-
-def add_bus(request):
-    if request.method == 'POST':
-        form = BusForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('buses')  # Redirect to a view showing all buses
-    else:
-        form = BusForm()
-    
-    return render(request, 'add_bus.html', {'form': form})
-
-def add_route(request):
-    if request.method == 'POST':
-        form = RouteForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('route_admin')  # Redirect to a view showing all routes
-    else:
-        form = RouteForm()
-    
-    return render(request, 'add_route.html', {'form': form})
 
 #customer views
 

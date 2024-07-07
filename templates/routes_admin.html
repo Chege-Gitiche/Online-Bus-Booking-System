@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
         integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
-        integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+        integrity="sha384-vSIIfh2YWi9wW0nR9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Routes Page</title>
 </head>
@@ -19,61 +19,36 @@
         <table class="table bg-white">
             <thead class="bg-info">
                 <tr class="text-white">
-                    <th scope="col">#</th>
+                    <th scope="col">Route ID</th>
                     <th scope="col">Origin</th>
                     <th scope="col">Destination</th>
-                    <th scope="col">Fare</th>
                     <th scope="col">Distance</th>
+                    <th scope="col">Fare</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for route in routes %}
                 <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ route.routeID }}</td>
                     <td>{{ route.origin }}</td>
                     <td>{{ route.destination }}</td>
-                    <td>{{ route.fare }}</td>
                     <td>{{ route.distance }}</td>
+                    <td>{{ route.fare }}</td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="">Edit</a>
-                        <a class="btn btn-danger btn-sm" href="">Delete</a>
+                        <a class="btn btn-info btn-sm" href="{% url 'edit_route' route.routeID %}">Edit</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'delete_route' route.routeID %}">Delete</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center">No routes found.</td>
+                    <td colspan="7" class="text-center">No routes found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        <!-- Form for new entry -->
-        <div class="mt-4">
-            <h4>Add New Route</h4>
-            <form method="post" action="{% url 'add_route' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="origin">Origin</label>
-                    <input type="text" class="form-control" id="origin" name="origin" required>
-                </div>
-                <div class="form-group">
-                    <label for="destination">Destination</label>
-                    <input type="text" class="form-control" id="destination" name="destination" required>
-                </div>
-                <div class="form-group">
-                    <label for="fare">Fare</label>
-                    <input type="number" class="form-control" id="fare" name="fare" required>
-                </div>
-                <div class="form-group">
-                    <label for="distance">Distance</label>
-                    <input type="number" class="form-control" id="distance" name="distance" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
-        <!-- End Form -->
-
+        <a class="btn btn-primary" href="{% url 'add_route' %}"><i class="fas fa-plus mr-2"></i>Add Route</a>
+        <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
