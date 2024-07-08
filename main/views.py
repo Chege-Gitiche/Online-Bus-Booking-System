@@ -3,6 +3,11 @@ from django.http import JsonResponse
 from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm
 from .models import OtpToken
 from django.contrib import messages
+
+from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+from collections import defaultdict
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -189,6 +194,58 @@ def admin(request):
     }
 
     return render(request, 'admin_template.html', context)
+
+def user_stats(request):
+    # Fetch all users
+    users = User.objects.all()
+    print("Fetched Users:", users)
+
+    # Aggregate data monthly
+    today = datetime.today()
+    months = [today - timedelta(days=30*i) for i in range(12)]
+    print("Months:", months)
+    
+    monthly_user_counts = defaultdict(int)
+
+    for user in users:
+        month = user.date_joined.strftime('%Y-%m')
+        monthly_user_counts[month] += 1
+
+    print("Monthly User Counts:", dict(monthly_user_counts))
+
+    # Prepare data for Chart.js
+    sorted_months = sorted(monthly_user_counts.keys())
+    print("Sorted Months:", sorted_months)
+
+    cumulative_user_counts = []
+    cumulative_count = 0
+
+    for month in sorted_months:
+        cumulative_count += monthly_user_counts[month]
+        cumulative_user_counts.append(cumulative_count)
+
+    print("Cumulative User Counts:", cumulative_user_counts)
+
+    data = {
+        'labels': sorted_months,
+        'datasets': [{
+            'label': 'Total Users',
+            'data': cumulative_user_counts,
+            'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+            'borderColor': 'rgba(75, 192, 192, 1)',
+            'borderWidth': 1,
+            'fill': False
+        }]
+    }
+
+    context = {
+        'chart_data': json.dumps(data),
+    }
+
+    print("Final Chart Data:", context['chart_data'])
+
+    return render(request, 'user_stats.html', context)
+
 
 def logout_user(request):
     if request.user.is_superuser:
