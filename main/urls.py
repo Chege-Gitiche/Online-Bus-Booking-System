@@ -32,8 +32,7 @@ urlpatterns= [
 
 
     path('gender/', views.gender, name='gender'),
-    
-   
+    path('search/', views.search_results, name='search_results'),
     
 
     path('sign_up',views.signUp,name='sign_up'),
@@ -42,7 +41,7 @@ urlpatterns= [
     path('login_user', views.login_user, name="login"),
 
     path('routes/', views.routes_view, name='routes'),
-    path('search/', views.search_view, name='search'),
+    path('search_view/', views.search_view, name='search_view'),
 
     path('seat-selection/<int:bus_id>/', views.seat_selection_view, name='seat_selection'),
     path('booking_details/<str:selected_seats>/', views.booking_details, name='booking_details'),

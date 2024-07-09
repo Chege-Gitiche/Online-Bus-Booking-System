@@ -569,6 +569,30 @@ def gender(request):
     return render(request, 'gender.html', {'gender_data': gender_data_json})
 
 
+def search_results(request):
+    query = request.GET.get('q', '')
+    error_message = None
+
+    users = User.objects.filter(username__icontains=query)
+    buses = Bus.objects.filter(busNumber__icontains=query)
+    schedules = Schedule.objects.filter(route__origin__icontains=query) | Schedule.objects.filter(route__destination__icontains=query)
+    routes = Route.objects.filter(origin__icontains=query) | Route.objects.filter(destination__icontains=query)
+
+    if not users.exists() and not buses.exists() and not schedules.exists() and not routes.exists():
+        error_message = "No results found for your query."
+
+    context = {
+        'query': query,
+        'users': users,
+        'buses': buses,
+        'schedules': schedules,
+        'routes': routes,
+        'error_message': error_message,
+    }
+
+    return render(request, 'search_results.html', context)
+
+
 #customer views
 
 @login_required(login_url="/login")
