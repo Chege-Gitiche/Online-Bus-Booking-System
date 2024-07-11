@@ -3,6 +3,11 @@ from django.http import JsonResponse
 from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm
 from .models import OtpToken
 from django.contrib import messages
+
+from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+from collections import defaultdict
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -155,26 +160,121 @@ def signIn(request):
     return render(request, "login.html")
 
 def login_user(request):
-    request.session['id'] = 1
+    request.session['id'] = 1  
+    
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
-           login(request, user)
-           
-           return redirect('index')
+            login(request, user)
+            
+            if user.is_superuser:
+                return redirect('admin_template')  # Replace with your admin template URL name
+            else:
+                return redirect('index')  # Replace with your home template URL name
         else:
-            messages.success(request, ("There Was An Error Logging In, Try Again..."))
+            messages.error(request, "There was an error logging in. Please try again.")
             return redirect('login')
+    
     else:
         return render(request, 'registration/login.html', {})
 
+
+@login_required
+def admin(request):
+    # Ensure only superusers can access this view
+    if not request.user.is_superuser:
+        # Redirect to regular home page or handle unauthorized access
+        messages.error(request, "You are not authorized to view this page.")
+        return redirect('index')
+
+    total_users = Profile.objects.count()
+    total_buses = Bus.objects.count()
+    total_routes = Route.objects.count()
+    total_schedules = Schedule.objects.count()
+    buses = Bus.objects.all()
+    bus_data = {
+        "labels": [bus.busNumber for bus in buses],
+        "data": [bus.capacity for bus in buses],
+    }
+
+    context = {
+        'total_users': total_users,
+        'total_buses': total_buses,
+        'total_routes': total_routes,
+        'total_schedules': total_schedules,
+        'bus_data': json.dumps(bus_data),
+    }
+
+    return render(request, 'admin_template.html', context)
+
+def user_stats(request):
+    # Fetch all users
+    users = User.objects.all()
+    print("Fetched Users:", users)
+
+    # Aggregate data monthly
+    today = datetime.today()
+    months = [today - timedelta(days=30*i) for i in range(12)]
+    print("Months:", months)
+    
+    monthly_user_counts = defaultdict(int)
+
+    for user in users:
+        month = user.date_joined.strftime('%Y-%m')
+        monthly_user_counts[month] += 1
+
+    print("Monthly User Counts:", dict(monthly_user_counts))
+
+    # Prepare data for Chart.js
+    sorted_months = sorted(monthly_user_counts.keys())
+    print("Sorted Months:", sorted_months)
+
+    cumulative_user_counts = []
+    cumulative_count = 0
+
+    for month in sorted_months:
+        cumulative_count += monthly_user_counts[month]
+        cumulative_user_counts.append(cumulative_count)
+
+    print("Cumulative User Counts:", cumulative_user_counts)
+
+    data = {
+        'labels': sorted_months,
+        'datasets': [{
+            'label': 'Total Users',
+            'data': cumulative_user_counts,
+            'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+            'borderColor': 'rgba(75, 192, 192, 1)',
+            'borderWidth': 1,
+            'fill': False
+        }]
+    }
+
+    context = {
+        'chart_data': json.dumps(data),
+    }
+
+    print("Final Chart Data:", context['chart_data'])
+
+    return render(request, 'user_stats.html', context)
+
+
 def logout_user(request):
-    logout(request)
-    request.session['id'] = 2
-    messages.success(request, ("You Were Logged Out!"))
-    return redirect('home')
+    if request.user.is_superuser:
+        # Logic for superuser logout
+        # For example, redirect to admin dashboard or a different page
+        logout(request)
+        messages.success(request, "Admin Logged Out Successfully.")
+        return redirect('home')  # Replace 'admin_dashboard' with your admin dashboard URL name
+    else:
+        # Logic for normal user logout
+        # For example, redirect to home page
+        logout(request)
+        messages.success(request, "You Were Logged Out Successfully.")
+        return redirect('home')  # Replace 'home' with your home page URL name
 
 @login_required(login_url="/login")
 def settings(request):
@@ -576,7 +676,8 @@ def seat_selection_view(request, bus_id):
             # Redirect to booking details or process selected seats
             return redirect('booking_details', selected_seats=selected_seats)
     
-    return render(request, 'seat_selection.html', {'seat_rows': seat_rows, 'bus': bus, 'fare': fare, 'origin': route.origin, 'destination': route.destination, 'total_amount': fare})
+    return render(request, 'seat_selection.html', {'seat_rows': seat_rows, 'bus': bus, 'fare': fare})
+
 
 @login_required(login_url="/login/")
 def booking_details(request, selected_seats):

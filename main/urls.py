@@ -6,6 +6,7 @@ urlpatterns= [
     path('',views.home,name='home'),
     path('home',views.index,name='index'),
     path('admin_template/', views.admin, name='admin_template'),
+    path('user_stats/', views.user_stats, name='user_stats'),
     path('settings', views.settings, name='settings'),
 
     path('users', views.users, name='users'),
@@ -44,6 +45,7 @@ urlpatterns= [
     path('login_user', views.login_user, name="login"),
 
     path('routes/', views.routes_view, name='routes'),
+    path('search/', views.search_view, name='search'),
 
     path('seat-selection/<int:bus_id>/', views.seat_selection_view, name='seat_selection'),
     path('booking_details/<str:selected_seats>/', views.booking_details, name='booking_details'),
