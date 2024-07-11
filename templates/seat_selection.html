@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +11,7 @@
             height: 100vh;
             margin: 0;
             padding: 0;
+            font-family: poppins, sans-serif;
         }
         .center {
             width: 100%;
@@ -20,9 +22,9 @@
             background: linear-gradient(to right, rgb(171, 232, 171), rgb(235, 232, 62));
         }
         .tickets {
-            width: 550px;
-            height: fit-content;
-            border: 0.4mm solid rgba(0, 0, 0, 0.08);
+            width: 350px; /* Adjusted width */
+            min-height: 300px; /* Increased minimum height */
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 3mm;
             box-sizing: border-box;
             padding: 10px;
@@ -52,8 +54,13 @@
             font-size: 16px;
             font-weight: 600;
         }
+        .seats-container {
+            display: flex;
+            flex-direction: row;
+            gap: 10px; /* Adjusted gap */
+        }
         .seats {
-            width: 100%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -68,23 +75,11 @@
             gap: 10px;
             justify-content: space-evenly;
         }
-        .seats::before {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translate(-50%, 0);
-            width: 220px;
-            height: 7px;
-            background: rgb(141, 198, 255);
-            border-radius: 0 0 3mm 3mm;
-            border-top: 0.3mm solid rgb(180, 180, 180);
-        }
-        .item {
+        .status .item {
             font-size: 12px;
             position: relative;
         }
-        .item::before {
+        .status .item::before {
             content: "";
             position: absolute;
             top: 50%;
@@ -96,36 +91,51 @@
             outline: 0.2mm solid rgb(120, 120, 120);
             border-radius: 0.3mm;
         }
-        .item:nth-child(2)::before {
+        .status .item:nth-child(2)::before {
             background: rgb(180, 180, 180);
             outline: none;
         }
-        .item:nth-child(3)::before {
+        .status .item:nth-child(3)::before {
             background: rgb(28, 185, 120);
             outline: none;
         }
         .all-seats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 15px;
-            margin: 60px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Reduced gap */
             margin-top: 20px;
             position: relative;
         }
+        .seat-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px; /* Reduced gap */
+        }
+        .back-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px; /* Reduced gap */
+        }
         .seat {
-            width: 20px;
-            height: 20px;
+            width: 18px; /* Slightly increased seat size */
+            height: 18px; /* Slightly increased seat size */
             background: white;
             border-radius: 0.5mm;
             outline: 0.3mm solid rgb(180, 180, 180);
             cursor: pointer;
         }
         .seat.booked {
-            background: rgba(180, 180, 180, 0.6); /* Lighter shade for booked seats */
+            background: rgba(180, 180, 180, 0.6);
             outline: none;
         }
         .seat.selected {
             background-color: rgb(28, 185, 120);
+        }
+        .aisle {
+            width: 15px; /* Reduced aisle width */
+            height: 15px; /* Reduced aisle height */
+            background: transparent;
+            border: none;
         }
         input {
             display: none;
@@ -164,7 +174,15 @@
             cursor: pointer;
         }
         .book-btn {
-            display: none; /* Hide the button initially */
+            display: none;
+        }
+        .bus-image {
+            width: 30px; /* Adjusted width */
+            height: auto;
+            
+        }.image-div{
+            display: flex;
+            justify-content: space-between;
         }
     </style>
 </head>
@@ -177,23 +195,47 @@
                     <div class="head">
                         <div class="title">Bus {{ bus.busNumber }}</div>
                     </div>
-                    <div class="seats">
-                        <div class="status">
-                            <div class="item">Available</div>
-                            <div class="item">Booked</div>
-                            <div class="item">Selected</div>
-                        </div>
-                        <div class="all-seats" id="seatContainer">
-                            {% for row in seat_rows %}
-                                <div class="seat-row">
-                                    {% for seat in row %}
-                                        <input type="checkbox" id="seat{{ seat.id }}" name="seats" value="{{ seat.id }}" {% if not seat.is_available %} disabled {% endif %} {% if seat.is_booked %} disabled {% endif %}>
-                                        <label for="seat{{ seat.id }}" class="seat {% if not seat.is_available %} booked {% endif %} {% if seat.is_selected or seat.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ seat.seat_number }}</label>
-                                    {% endfor %}
+                    <div class="seats-container">
+                        <div class="seats">
+                            <div class="status">
+                                <div class="item">Available</div>
+                                <div class="item">Booked</div>
+                                <div class="item">Selected</div>
+                            </div>
+                            
+                            <div class="all-seats" id="seatContainer">
+                                <div class="image-div">
+                                    <div></div>
+                                    <img src="{% static 'images/steering wheel.jpg' %}" class="bus-image">
                                 </div>
-                            {% endfor %}
+                                {% for row in seat_rows %}
+                                    {% if forloop.last %}
+                                        <div class="back-row">
+                                            {% for seat in row %}
+                                                <input type="checkbox" id="seat{{ seat.id }}" name="seats" value="{{ seat.id }}" {% if not seat.is_available %} disabled {% endif %} {% if seat.is_booked %} disabled {% endif %}>
+                                                <label for="seat{{ seat.id }}" class="seat {% if not seat.is_available %} booked {% endif %} {% if seat.is_selected or seat.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ seat.seat_number }}</label>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="seat-row">
+                                            <div class="seat-group">
+                                                <input type="checkbox" id="seat{{ row.0.id }}" name="seats" value="{{ row.0.id }}" {% if not row.0.is_available %} disabled {% endif %} {% if row.0.is_booked %} disabled {% endif %}>
+                                                <label for="seat{{ row.0.id }}" class="seat {% if not row.0.is_available %} booked {% endif %} {% if row.0.is_selected or row.0.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ row.0.seat_number }}</label>
+                                                <input type="checkbox" id="seat{{ row.1.id }}" name="seats" value="{{ row.1.id }}" {% if not row.1.is_available %} disabled {% endif %} {% if row.1.is_booked %} disabled {% endif %}>
+                                                <label for="seat{{ row.1.id }}" class="seat {% if not row.1.is_available %} booked {% endif %} {% if row.1.is_selected or row.1.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ row.1.seat_number }}</label>
+                                            </div>
+                                            <div class="aisle"></div>
+                                            <div class="seat-group">
+                                                <input type="checkbox" id="seat{{ row.2.id }}" name="seats" value="{{ row.2.id }}" {% if not row.2.is_available %} disabled {% endif %} {% if row.2.is_booked %} disabled {% endif %}>
+                                                <label for="seat{{ row.2.id }}" class="seat {% if not row.2.is_available %} booked {% endif %} {% if row.2.is_selected or row.2.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ row.2.seat_number }}</label>
+                                                <input type="checkbox" id="seat{{ row.3.id }}" name="seats" value="{{ row.3.id }}" {% if not row.3.is_available %} disabled {% endif %} {% if row.3.is_booked %} disabled {% endif %}>
+                                                <label for="seat{{ row.3.id }}" class="seat {% if not row.3.is_available %} booked {% endif %} {% if row.3.is_selected or row.3.is_booked %} selected {% endif %}" data-fare="{{ fare }}">{{ row.3.seat_number }}</label>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
-                        
                     </div>
                     <div class="price">
                         <div class="total">
@@ -201,14 +243,11 @@
                         </div>
                         <button type="submit" class="book-btn">Book</button>
                     </div>
-                    <div class="button-container" style="text-align: center; margin-top: 20px;">
-                    </div>
-                
                 </form>
             </div>
         </div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const seatContainer = document.getElementById('seatContainer');

@@ -3,7 +3,7 @@
 {% block title %}Booking Status{% endblock %}
 {% block content %}
     <h2>Booking Status</h2>
-    {% if messages %}
+    
         <ul class="messages">
             {% for message in messages %}
               <div class="alert alert-{{message.tags}}" role="alert" style="margin-top: 30px">
@@ -11,7 +11,10 @@
               </div>
             {% endfor %}
         </ul>
-    {% endif %}
+
+        <h2>Invoice</h2>
+        <p><a href="{% url 'generate_pdf' %}">Download Payment PDF</a></p>
+    
 
 
 {% endblock content %}

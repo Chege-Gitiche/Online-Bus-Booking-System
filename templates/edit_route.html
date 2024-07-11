@@ -1,0 +1,44 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <title>Edit Route</title>
+</head>
+
+<body>
+    <div class="container my-4">
+        <h4>Edit Route</h4>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="routeID">Route ID</label>
+                <input type="text" class="form-control" id="routeID" name="routeID" value="{{ route.routeID }}" required>
+            </div>
+            <div class="form-group">
+                <label for="origin">Origin</label>
+                <input type="text" class="form-control" id="origin" name="origin" value="{{ route.origin }}" required>
+            </div>
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" class="form-control" id="destination" name="destination" value="{{ route.destination }}" required>
+            </div>
+            <div class="form-group">
+                <label for="distance">Distance</label>
+                <input type="number" step="0.01" class="form-control" id="distance" name="distance" value="{{ route.distance }}" required>
+            </div>
+            <div class="form-group">
+                <label for="fare">Fare</label>
+                <input type="number" step="0.01" class="form-control" id="fare" name="fare" value="{{ route.fare }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'routes_admin' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</body>
+
+</html>

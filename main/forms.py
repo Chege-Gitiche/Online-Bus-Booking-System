@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model 
-from .models import Profile, Booking
+from .models import Profile, Booking , Bus
 
 
 class RegisterForm(UserCreationForm):
@@ -45,3 +45,9 @@ class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
         fields = ['user', 'scheduleID' , 'seatNumber', 'totalPrice']
+
+
+class BusForm(forms.ModelForm):
+    class Meta:
+        model = Bus
+        fields = ['busNumber', 'capacity', 'type', 'status']

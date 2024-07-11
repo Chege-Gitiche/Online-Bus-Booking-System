@@ -9,6 +9,7 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <style>
         /* Add your custom styles here */
@@ -214,7 +215,7 @@
                 </div>
             </div>
             <div class="modify-section">
-                <form method="POST" action="{% url 'search' %}" class="modify-form">
+                <form method="POST" action="{% url 'search_view' %}" class="modify-form">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="origin" class="form-label">Origin:</label>
@@ -310,4 +311,4 @@
 </body>
 </html>
 
-{% endblock content %}
+{% endblock %}

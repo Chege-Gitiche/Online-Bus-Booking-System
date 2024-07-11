@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% load static %}
     <meta charset="UTF-8" />
@@ -11,21 +12,24 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Dashboard</title>
 </head>
+
 <body>
     <!-- Top navigation bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="offcanvasExample">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar"
+                aria-controls="offcanvasExample">
                 <span class="navbar-toggler-icon" data-bs-target="#sidebar"></span>
             </button>
             <a class="navbar-brand me-auto ms-lg-0 ms-3 text-uppercase fw-bold" href="{% url 'admin_template' %}">BasiBasi</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavBar" aria-controls="topNavBar" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavBar"
+                aria-controls="topNavBar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="topNavBar">
-                <form class="d-flex ms-auto my-3 my-lg-0">
+                <form class="d-flex ms-auto my-3 my-lg-0" action="{% url 'search_results' %}" method="get">
                     <div class="input-group">
-                        <input class="form-control" type="search" placeholder="Search" aria-label="Search" />
+                        <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="q" />
                         <button class="btn btn-primary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
@@ -33,8 +37,10 @@
                 </form>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle ms-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ user.profile.profile_img.url }}" class="rounded-circle" alt="" style="width: 40px; height: 36px; margin-right: 10px;">
+                        <a class="nav-link dropdown-toggle ms-2" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <img src="{{ user.profile.profile_img.url }}" class="rounded-circle" alt=""
+                                style="width: 40px; height: 36px; margin-right: 10px;">
                             {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -70,41 +76,53 @@
                     <li>
                         <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'users' %}">
                             <span class="me-2">
-                            <span>Users</span>
+                                <span>Users</span>
+                            </span>
                         </a>
                     </li>
                     <li>
                         <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'routes_admin' %}">
                             <span class="me-2">
-                            <span>Routes</span>
+                                <span>Routes</span>
+                            </span>
                         </a>
                     </li>
                     <li>
                         <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'buses' %}">
                             <span class="me-2">
-                            <span>Bus</span>
+                                <span>Bus</span>
+                            </span>
                         </a>
                     </li>
                     <li>
                         <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'schedule' %}">
                             <span class="me-2">
-                            <span>Schedule</span>
+                                <span>Schedule</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'booking_form' %}">
+                            <span class="me-2">
+                                <span>Bookings</span>
+                            </span>
                         </a>
                     </li>
                     <li class="my-4">
-                      <hr class="dropdown-divider bg-light" />
+                        <hr class="dropdown-divider bg-light" />
                     </li>
                     <li>
-                      <div class="text-muted small fw-bold text-uppercase px-3 mb-3">
-                          Extras
-                      </div>
-                  </li>
-                  <li>
-                    <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'gender' %}">
-                        <span class="me-2">
-                        <span>Gender Proportions</span>
-                    </a>
-                </li>
+                        <div class="text-muted small fw-bold text-uppercase px-3 mb-3">
+                            Extras
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'gender' %}">
+                            <span class="me-2">
+                                <span>Gender</span>
+                            </span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -123,7 +141,7 @@
                 <!-- Main content -->
                 <div class="col-md-10">
                     <div id="dashboard-content">
-                        <!-- Summary, cards, and pie chart -->
+                        <!-- Summary, cards, and charts -->
                         <div class="row">
                             <div class="col-md-12">
                                 <h4>Summary</h4>
@@ -167,21 +185,24 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Pie Chart for Bus Capacities -->
-                        <div class="row mt-4">
-                          <div class="col-md-8 offset-md-2">
-                              <div class="card">
-                                  <div class="card-body">
-                                      <h4 class="card-title text-center">Bus Capacities</h4>
-                                      <div class="chart-container" style="position: relative; height:100px; width:50%">
-                                          <canvas id="busCapacityChart"></canvas>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                        </div>
 
-                      
+                        <!-- Charts Section -->
+                        <div class="row mt-4">
+                            <!-- Bus Capacities Pie Chart -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title text-center">Bus Capacities</h4>
+                                        <div class="chart-container" style="position: relative; height:300px;">
+                                            <canvas id="busCapacityChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- End Charts Section -->
+
                     </div>
 
                     <!-- Dynamic content area -->
@@ -216,46 +237,48 @@
         });
 
         // Chart.js script for bus capacity chart
-    var busData = JSON.parse('{{ bus_data|escapejs }}');
-    var ctx = document.getElementById('busCapacityChart').getContext('2d');
-    var busCapacityChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: busData.labels,
-            datasets: [{
-                data: busData.data,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.9)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.9)',
-                    'rgba(224, 43, 122, 0.7)',
-                    'rgba(154, 56, 235, 0.8)',
-                    'rgba(225, 106, 186, 0.8)',
-                    'rgba(175, 122, 159, 0.8)',
-                    'rgba(145, 190, 219, 0.8)',
-                    'rgba(217, 109, 44, 0.8)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+        var busData = JSON.parse('{{ bus_data|escapejs }}');
+        var ctxBus = document.getElementById('busCapacityChart').getContext('2d');
+        var busCapacityChart = new Chart(ctxBus, {
+            type: 'pie',
+            data: {
+                labels: busData.labels,
+                datasets: [{
+                    data: busData.data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.9)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.9)',
+                        'rgba(224, 43, 122, 0.7)',
+                        'rgba(154, 56, 235, 0.8)',
+                        'rgba(225, 106, 186, 0.8)',
+                        'rgba(175, 122, 159, 0.8)',
+                        'rgba(145, 190, 219, 0.8)',
+                        'rgba(217, 109, 44, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+        
     </script>
 </body>
+
 </html>

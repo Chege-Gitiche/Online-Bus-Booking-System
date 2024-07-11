@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm , BookingForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm
 from .models import OtpToken
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -9,23 +9,41 @@ from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
-from .models import Profile, Route, Schedule, Bus, Seat, Booking
+from .models import Profile, Route, Schedule, Bus, Seat, Booking,User
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
 from django.views.decorators.csrf import csrf_exempt
 from .generateAcesstoken import get_access_token
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
 import json
 from datetime import datetime
 import base64
 import json
 import requests
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Frame, PageTemplate
+from reportlab.lib import colors
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
 def index(request):
-    user_profile = Profile.objects.get(user=request.user)
-    return render(request, "main/home.html", {'user_profile' : user_profile})
+    if request.user.is_superuser:
+        # Redirect superuser to admin_template or handle differently as needed
+        return redirect('admin_template')
+    
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        # Handle case where user profile doesn't exist
+        messages.error(request, "User profile not found.")
+        return redirect('index')  # Redirect to regular home or handle appropriately
+    
+    return render(request, "main/home.html", {'user_profile': user_profile})
 
 def home(request):
     return render(request,'main/base.html')
@@ -171,6 +189,7 @@ def settings(request):
         secondary_email = request.POST.get('secondary_email', '')
         payment_method = request.POST.get('payment_method', '')
         phone_number = request.POST.get('phone_number', '')
+        gender = request.POST.get('gender', '')
 
         user_profile.profile_img = image
         user_profile.bio = bio
@@ -179,11 +198,297 @@ def settings(request):
         user_profile.secondary_email = secondary_email
         user_profile.payment_method = payment_method
         user_profile.phone_number = phone_number
+        user_profile.gender = gender
         user_profile.save()
 
         return redirect('settings')
 
     return render(request, 'setting.html', {'user_profile': user_profile})
+
+#dashboard
+#dashboard
+@login_required(login_url="/login")
+def users(request):
+    profiles = Profile.objects.select_related('user').all()
+
+    context = {
+        'profiles': profiles,
+    }
+
+    return render(request, 'users.html', context)
+
+def add_user(request):
+    if request.method == 'POST':
+        # Handle form submission
+        username = request.POST.get('username')
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address')
+        primary_email = request.POST.get('primary_email')
+
+        # Assuming 'request.user' gives the authenticated user instance
+        user_instance = request.user
+
+        # Create a new profile instance
+        Profile.objects.create(
+            user=user_instance,
+            payment_method=payment_method,
+            address=address,
+            primary_email=primary_email
+        )
+
+        # Redirect to a success page or another view
+        return redirect('users')  # Redirect to users list page, adjust the name as per your URLconf
+
+    # If not a POST request, render the form
+    return render(request, 'add_user.html')
+
+def edit_user(request, pk):
+    profile = get_object_or_404(Profile, pk=pk)
+    user_instance = profile.user  # Retrieve the related User instance
+
+    if request.method == 'POST':
+        # Handle form submission
+        payment_method = request.POST.get('payment_method')
+        address = request.POST.get('address')
+        primary_email = request.POST.get('primary_email')
+
+        # Update profile fields
+        profile.payment_method = payment_method
+        profile.address = address
+        profile.primary_email = primary_email
+        profile.save()
+
+        # Redirect to a success page or another view
+        return redirect('users')  # Redirect to users list page, adjust the name as per your URLconf
+
+    # If not a POST request, render the form with pre-filled data
+    return render(request, 'edit_user.html', {'profile': profile})
+
+def delete_user(request, pk):
+    profile = get_object_or_404(Profile, pk=pk)
+    user = profile.user
+
+    if request.method == 'POST':
+        # Perform deletion
+        user.delete()
+        # Optionally, delete associated profile if needed
+        profile.delete()
+        return redirect('users')  # Redirect to users list page after deletion
+
+    # Handle GET request (optional: render confirmation template or redirect)
+    return redirect('users')  # Redirect to users list page if not POST
+
+@login_required(login_url="/login")
+def routes_admin(request):
+    routes = Route.objects.all()
+
+    context = {
+        'routes': routes,
+    }
+
+    return render(request, 'routes_admin.html', context)
+
+@login_required(login_url="/login")
+def add_route(request):
+    if request.method == 'POST':
+        route_id = request.POST.get('routeID')
+        origin = request.POST.get('origin')
+        destination = request.POST.get('destination')
+        distance = request.POST.get('distance')
+        fare = request.POST.get('fare')
+
+        Route.objects.create(
+            routeID=route_id,
+            origin=origin,
+            destination=destination,
+            distance=distance,
+            fare=fare
+        )
+
+        return redirect('routes_admin')
+
+    return render(request, 'add_route.html')
+
+@login_required(login_url="/login")
+def edit_route(request, route_id):
+    route = get_object_or_404(Route, routeID=route_id)
+
+    if request.method == 'POST':
+        route.routeID = request.POST.get('routeID')
+        route.origin = request.POST.get('origin')
+        route.destination = request.POST.get('destination')
+        route.distance = request.POST.get('distance')
+        route.fare = request.POST.get('fare')
+        route.save()
+
+        return redirect('routes_admin')
+
+    context = {
+        'route': route,
+    }
+    return render(request, 'edit_route.html', context)
+
+@login_required(login_url="/login")
+def delete_route(request, route_id):
+    route = get_object_or_404(Route, routeID=route_id)
+
+    if request.method == 'POST':
+        route.delete()
+        return redirect('routes')
+
+    context = {
+        'route': route,
+    }
+    return render(request, 'delete_route.html', context)
+
+
+
+@login_required(login_url="/login")
+def buses(request):
+    buses = Bus.objects.all()
+
+    context = {
+        'buses': buses,
+    }
+
+    return render(request, 'buses.html', context)
+
+def add_bus(request):
+    if request.method == 'POST':
+        form = BusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('buses')  # Redirect to a view showing all buses
+    else:
+        form = BusForm()
+    
+    return render(request, 'add_bus.html', {'form': form})
+
+def edit_bus(request, pk):
+    bus = get_object_or_404(Bus, pk=pk)
+    if request.method == 'POST':
+        form = BusForm(request.POST, instance=bus)
+        if form.is_valid():
+            form.save()
+            return redirect('buses')  # Redirect to buses list page after editing bus
+    else:
+        form = BusForm(instance=bus)
+    
+    return render(request, 'edit_bus.html', {'form': form, 'bus': bus})
+
+def delete_bus(request, pk):
+    bus = get_object_or_404(Bus, pk=pk)
+    if request.method == 'POST':
+        bus.delete()
+        return redirect('buses')  # Redirect to buses list page after deleting bus
+    
+    return render(request, 'delete_bus.html', {'bus': bus})
+
+
+@login_required(login_url="/login")
+def schedules(request):
+    schedules = Schedule.objects.all()
+
+    context = {
+        'schedules': schedules,
+    }
+
+    return render(request, 'schedule.html', context)
+
+@login_required(login_url="/login")
+def add_schedule(request):
+    if request.method == 'POST':
+        bus_id = request.POST.get('bus')
+        route_id = request.POST.get('route')
+        departure_time = request.POST.get('departureTime')
+        arrival_time = request.POST.get('arrivalTime')
+        date = request.POST.get('date')
+
+        bus = Bus.objects.get(id=bus_id)
+        route = Route.objects.get(routeID=route_id)
+
+        Schedule.objects.create(
+            bus=bus,
+            route=route,
+            departureTime=departure_time,
+            arrivalTime=arrival_time,
+            date=date
+        )
+
+        return redirect('schedules')
+
+    buses = Bus.objects.all()
+    routes = Route.objects.all()
+    context = {
+        'buses': buses,
+        'routes': routes,
+    }
+    return render(request, 'add_schedule.html', context)
+
+@login_required(login_url="/login")
+def edit_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, scheduleID=schedule_id)
+
+    if request.method == 'POST':
+        bus_id = request.POST.get('bus')
+        route_id = request.POST.get('route')
+        departure_time = request.POST.get('departureTime')
+
+        bus = Bus.objects.get(id=bus_id)
+        route = Route.objects.get(routeID=route_id)
+
+        schedule.bus = bus
+        schedule.route = route
+        schedule.departureTime = departure_time
+        schedule.save()
+
+        return redirect('schedule')
+
+    buses = Bus.objects.all()
+    routes = Route.objects.all()
+    context = {
+        'schedule': schedule,
+        'buses': buses,
+        'routes': routes,
+    }
+    return render(request, 'edit_schedule.html', context)
+
+@login_required(login_url="/login")
+def delete_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, scheduleID=schedule_id)
+
+    if request.method == 'POST':
+        schedule.delete()
+        return redirect('schedule')
+
+    context = {
+        'schedule': schedule,
+    }
+    return render(request, 'delete_schedule.html', context)
+
+
+def gender(request):
+    # Count the number of each gender in the system
+    male_count = Profile.objects.filter(gender='male').count()
+    female_count = Profile.objects.filter(gender='female').count()
+    other_count = Profile.objects.filter(gender='other').count()
+
+    # Prepare data for the chart
+    gender_data = {
+        'labels': ['Male', 'Female', 'Other'],
+        'data': [male_count, female_count, other_count]
+    }
+    label = ['Male', 'Female', 'Other']
+    data = [male_count, female_count, other_count]
+
+    # Convert gender_data to JSON string
+    gender_data_json = json.dumps(gender_data)
+
+    return render(request, 'gender.html', {'gender_data': gender_data_json,
+                                           'label': label,
+                                           'data': data})
+
+#customer views
 
 @login_required(login_url="/login")
 def routes_view(request):
@@ -198,14 +503,19 @@ def search_view(request):
         date = request.POST.get('date')
 
         try:
-            # Query schedules based on the selected origin, destination, and date
-            schedules = Schedule.objects.filter(route__origin=origin, route__destination=destination, date=date)
+            # Query schedules based on the selected origin, destination, and date, and filter active buses
+            schedules = Schedule.objects.filter(
+                route__origin=origin, 
+                route__destination=destination, 
+                date=date,
+                bus__status='Active'  # Ensure only active buses are considered
+            )
 
             if schedules.exists():
                 # Calculate total amount
                 total_amount = sum(schedule.route.fare for schedule in schedules)
 
-                # Retrieve buses associated with the schedules
+                # Retrieve active buses associated with the schedules
                 buses = [schedule.bus for schedule in schedules]
 
                 return render(request, 'search.html', {
@@ -230,6 +540,7 @@ def search_view(request):
         routes = Route.objects.all()
         return render(request, 'routes.html', {'routes': routes})
 
+
 @login_required
 def seat_selection_view(request, bus_id):
     bus = get_object_or_404(Bus, id=bus_id)
@@ -239,23 +550,31 @@ def seat_selection_view(request, bus_id):
     
     # Fetch seats associated with the bus
     seats = Seat.objects.filter(bus=bus)
-    # Organize seats into rows, assuming 4 seats per row as per your template
+    
+    # Organize seats into rows, with 4 seats per row
     seat_rows = []
     row = []
     for index, seat in enumerate(seats):
         row.append(seat)
-        if (index + 1) % 4 == 0:  # Assuming 4 seats per row
+        if (index + 1) % 4 == 0:  # 4 seats per row
             seat_rows.append(row)
             row = []
     if row:
         seat_rows.append(row)
     
+    # Adjust the last row to join the seats at the back
+    if seat_rows:
+        last_row = seat_rows[-1]
+        if len(last_row) == 3:
+            # Add an extra seat to join the last row
+            last_row.append(last_row[-1])
+    
     if request.method == 'POST':
-        selected_seats = request.POST.getlist('seats')
-        if selected_seats:
-            selected_seats_str = ','.join(selected_seats)
-            # return redirect('booking_details', selected_seats=selected_seats_str)
-            return redirect("booking_details/"+str(slec))
+        selected_seats_str = request.POST.get('selected_seats', '')
+        if selected_seats_str:
+            selected_seats = selected_seats_str.split(',')
+            # Redirect to booking details or process selected seats
+            return redirect('booking_details', selected_seats=selected_seats)
     
     return render(request, 'seat_selection.html', {'seat_rows': seat_rows, 'bus': bus, 'fare': fare, 'origin': route.origin, 'destination': route.destination, 'total_amount': fare})
 
@@ -314,7 +633,7 @@ def payment(request, booking_user):
     user_profile = Profile.objects.get(user=request.user)
     # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
     phone_number = user_profile.phone_number
-    amount = 1
+    amount = 500
     account_reference = 'reference'
     transaction_desc = 'Description'
     callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
@@ -354,7 +673,7 @@ def booking(request):
     transaction_desc = 'Description'
     callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
     response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
-
+    
     if response.status_code == 200:
         messages.success(request, 'Payment prompt sent to your phone')
          # Retrieve booking details from session
@@ -368,7 +687,7 @@ def booking(request):
         messages.error(request, 'Failed to send payment prompt to your phone')
 
     return render(request, 'booking.html')
-    
+     
 @csrf_exempt
 def mpesa_callback(request):  
             access_token_response = get_access_token(request)
@@ -419,3 +738,171 @@ def mpesa_callback(request):
             except Exception as e:
                 return JsonResponse({'error': 'Error: ' + str(e)})  # Return JSON response for any other error
 
+@login_required
+def admin(request):
+    # Ensure only superusers can access this view
+    if not request.user.is_superuser:
+        # Redirect to regular home page or handle unauthorized access
+        messages.error(request, "You are not authorized to view this page.")
+        return redirect('index')
+
+    total_users = Profile.objects.count()
+    total_buses = Bus.objects.count()
+    total_routes = Route.objects.count()
+    total_schedules = Schedule.objects.count()
+    buses = Bus.objects.all()
+    bus_data = {
+        "labels": [bus.busNumber for bus in buses],
+        "data": [bus.capacity for bus in buses],
+    }
+
+    context = {
+        'total_users': total_users,
+        'total_buses': total_buses,
+        'total_routes': total_routes,
+        'total_schedules': total_schedules,
+        'bus_data': json.dumps(bus_data),
+    }
+
+    return render(request, 'admin_template.html', context)
+
+
+def generate_pdf(request):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+
+    elements = []
+
+    # Fetch user and profile details
+    user = request.user
+    profile = Profile.objects.get(user=request.user)
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=18, spaceAfter=14)
+    heading_style = ParagraphStyle('Heading', parent=styles['Heading2'], fontSize=14, spaceAfter=10)
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=12)
+    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=12, textColor=colors.darkgrey, fontName='Times-Roman', spaceBefore=20)
+
+    # Title
+    elements.append(Paragraph('BUS TICKET', title_style))
+    elements.append(Paragraph(f'Booking ID: 1410250349', normal_style))
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Trip Details
+    trip_details = [
+        ['Trip Details'],
+        ['Bus:', 'KCY'],
+        ['Date:', '09-09-2014, 00:00'],
+        ['Departure from:', 'Nairobi'],
+        ['Arrive to:', 'Kisumu'],
+        ['Ticket Type:', 'Regular 1'],
+        ['Seats:', '1'],
+    ]
+
+    trip_table = Table(trip_details, colWidths=[2 * inch, 4.5 * inch])
+    trip_table.setStyle(TableStyle([
+        ('SPAN', (0, 0), (-1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(trip_table)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Customer and Booking Details
+    customer_details = [
+        ['Customer and Booking Details'],
+        ['Customer Name:', user.username],
+        ['Phone:', profile.phone_number],
+        ['Booking Total:', '500'],
+        ['Online Deposit Payment:', 'through cash'],
+    ]
+
+    customer_table = Table(customer_details, colWidths=[2 * inch, 4.5 * inch])
+    customer_table.setStyle(TableStyle([
+        ('SPAN', (0, 0), (-1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    elements.append(customer_table)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Footer (optional)
+    footer_text = "Notes:Thank you for the payment"
+    elements.append(Paragraph(footer_text, footer_style))
+
+    doc.build(elements)
+
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='invoice.pdf')
+
+
+
+@login_required(login_url="/login")
+def booking_form(request):
+    bookings = Booking.objects.all()
+
+    context = {
+        'bookings': bookings,
+    }
+
+    return render(request, 'booking_form.html', context)
+
+def add_booking(request):
+     if request.method == 'POST':
+        route_id = request.POST.get('routeID')
+        origin = request.POST.get('origin')
+        destination = request.POST.get('destination')
+        distance = request.POST.get('distance')
+        fare = request.POST.get('fare')
+
+        Route.objects.create(
+            routeID=route_id,
+            origin=origin,
+            destination=destination,
+            distance=distance,
+            fare=fare
+        )
+
+        return redirect('routes_admin')
+
+     return render(request, 'add_booking.html')
+
+
+def search_results(request):
+    query = request.GET.get('q', '')
+    error_message = None
+
+    users = User.objects.filter(username__icontains=query)
+    buses = Bus.objects.filter(busNumber__icontains=query)
+    schedules = Schedule.objects.filter(route__origin__icontains=query) | Schedule.objects.filter(route__destination__icontains=query)
+    routes = Route.objects.filter(origin__icontains=query) | Route.objects.filter(destination__icontains=query)
+
+    if not users.exists() and not buses.exists() and not schedules.exists() and not routes.exists():
+        error_message = "No results found for your query."
+
+    context = {
+        'query': query,
+        'users': users,
+        'buses': buses,
+        'schedules': schedules,
+        'routes': routes,
+        'error_message': error_message,
+    }
+
+    return render(request, 'search_results.html', context)

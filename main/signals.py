@@ -1,5 +1,5 @@
 #signals.py
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,  pre_save
 from django.conf import settings
 from django.dispatch import receiver
 from .models import OtpToken
@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from .models import Profile, Bus, Seat
+from .models import Profile, Bus, Seat, Booking
 
 user = get_user_model()
  
@@ -58,4 +58,41 @@ def create_seats(sender, instance, created, **kwargs):
     if created:
         instance.create_seats()
 
+
+@receiver(pre_save, sender=Bus, dispatch_uid='alert users of bus')
+def bus_status_change(sender, instance, **kwargs):
+    if instance.busNumber:
+        old_bus = Bus.objects.get(busNumber=instance.busNumber)
+        if old_bus.status == 'Active' and instance.status == 'Maintenance':
+            # Fetch all bookings for this bus
+            bookings = Booking.objects.filter(scheduleID__bus=instance)
+            for booking in bookings:
+                user_profile = booking.user
+                # Send notification
+                send_bus_maintenance_notification(user_profile, instance)
+
+def send_bus_maintenance_notification(user_profile, bus):
+        subject="Bus change notification"
+        message = f"""
+        Dear {user_profile.user.username},
+        
+        We regret to inform you that the bus you were scheduled to board {bus.busNumber} is now under maintenance.
+        Please contact our support team for further assistance.
+        
+        Best regards,
+        Basi Bus Team
+        """
+
+        sender = "chegegitiche254@gmail.com"
+        receiver = [user_profile.user.email]
+
+
+        send_mail(
+                subject,
+                message,
+                sender,
+                receiver,
+                fail_silently=False,
+        )
+        
   

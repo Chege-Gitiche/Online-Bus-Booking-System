@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
         integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
-        integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+        integrity="sha384-vSIIfh2YWi9wW0nR9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Schedules Page</title>
 </head>
@@ -20,10 +20,10 @@
             <thead class="bg-info">
                 <tr class="text-white">
                     <th scope="col">#</th>
-                    <th scope="col">Bus</th>
-                    <th scope="col">Route</th>
+                    <th scope="col">Bus Number</th>
+                    <th scope="col">Origin</th>
+                    <th scope="col">Destination</th>
                     <th scope="col">Departure Time</th>
-                    <th scope="col">Arrival Time</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
@@ -31,13 +31,13 @@
                 {% for schedule in schedules %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ schedule.bus.bus_number }}</td>
-                    <td>{{ schedule.route.origin }} - {{ schedule.route.destination }}</td>
-                    <td>{{ schedule.departure_time }}</td>
-                    <td>{{ schedule.arrival_time }}</td>
+                    <td>{{ schedule.bus.busNumber }}</td>
+                    <td>{{ schedule.route.origin }}</td>
+                    <td>{{ schedule.route.destination }}</td>
+                    <td>{{ schedule.departureTime }}</td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="">Edit</a>
-                        <a class="btn btn-danger btn-sm" href="">Delete</a>
+                        <a class="btn btn-info btn-sm" href="{% url 'edit_schedule' schedule.scheduleID %}">Edit</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'delete_schedule' schedule.scheduleID %}">Delete</a>
                     </td>
                 </tr>
                 {% empty %}
@@ -47,42 +47,8 @@
                 {% endfor %}
             </tbody>
         </table>
-
-        <!-- Form for new entry -->
-        <div class="mt-4">
-            <h4>Add New Schedule</h4>
-            <form method="post" action="{% url 'add_schedule' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="bus">Bus</label>
-                    <select class="form-control" id="bus" name="bus" required>
-                        {% for bus in buses %}
-                        <option value="{{ bus.id }}">{{ bus.bus_number }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="route">Route</label>
-                    <select class="form-control" id="route" name="route" required>
-                        {% for route in routes %}
-                        <option value="{{ route.id }}">{{ route.origin }} - {{ route.destination }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="departure_time">Departure Time</label>
-                    <input type="datetime-local" class="form-control" id="departure_time" name="departure_time"
-                        required>
-                </div>
-                <div class="form-group">
-                    <label for="arrival_time">Arrival Time</label>
-                    <input type="datetime-local" class="form-control" id="arrival_time" name="arrival_time" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
-        <!-- End Form -->
-
+        <a class="btn btn-primary" href="{% url 'add_schedule' %}"><i class="fas fa-plus mr-2"></i>Add Schedule</a>
+        <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
