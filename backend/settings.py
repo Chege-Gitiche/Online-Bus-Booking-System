@@ -40,8 +40,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_tools_stats',  
-    'django_nvd3',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +50,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'phonenumber_field',
-    'django_daraja',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -95,18 +92,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-
-            'NAME': os.getenv('DB_NAME'),
-
-            'USER': os.getenv('DB_USER'),
-
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-
-            'HOST': os.getenv('DB_HOST'),
-
-            'PORT': os.getenv('DB_PORT'),
-}
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -153,8 +141,10 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 PHONENUMBER_DEFAULT_REGION = 'KE'
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
@@ -173,7 +163,7 @@ EMAIL_PORT = 587
 
 PASSWORD_RESET_FORM = 'main/templates/registration/password_reset_form.html'
 
-#ADMIN_TOOLS_INDEX_DASHBOARD = 'backend.dashboard.CustomIndexDashboard'
+ADMIN_TOOLS_INDEX_DASHBOARD = 'backend.dashboard.CustomIndexDashboard'
 
 MPESA_ENVIRONMENT = 'sandbox'
 

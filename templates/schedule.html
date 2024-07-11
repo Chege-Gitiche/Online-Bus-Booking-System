@@ -1,0 +1,63 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+        integrity="sha384-vSIIfh2YWi9wW0nR9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Schedules Page</title>
+</head>
+
+<body>
+    <div class="container my-4">
+        <h4>Schedules List</h4>
+        <table class="table bg-white">
+            <thead class="bg-info">
+                <tr class="text-white">
+                    <th scope="col">#</th>
+                    <th scope="col">Bus Number</th>
+                    <th scope="col">Origin</th>
+                    <th scope="col">Destination</th>
+                    <th scope="col">Departure Time</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ schedule.bus.busNumber }}</td>
+                    <td>{{ schedule.route.origin }}</td>
+                    <td>{{ schedule.route.destination }}</td>
+                    <td>{{ schedule.departureTime }}</td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{% url 'edit_schedule' schedule.scheduleID %}">Edit</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'delete_schedule' schedule.scheduleID %}">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No schedules found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a class="btn btn-primary" href="{% url 'add_schedule' %}"><i class="fas fa-plus mr-2"></i>Add Schedule</a>
+        <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

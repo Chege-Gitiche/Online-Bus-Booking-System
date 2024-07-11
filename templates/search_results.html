@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-align: center;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .card-header {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+        .card-title {
+            margin: 0;
+            font-size: 18px;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .list-group {
+            padding-left: 0;
+            margin-bottom: 0;
+            list-style: none;
+        }
+        .list-group-item {
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-top-width: 0;
+        }
+        .list-group-item:first-child {
+            border-top-width: 1px;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+        .list-group-item:last-child {
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #fff;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
+            background-color: #6c757d;
+            border: 1px solid #6c757d;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Search Results for "{{ query }}"</h2>
+
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% else %}
+            {% if users %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Users</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for user in users %}
+                                <li class="list-group-item">{{ user.username }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% elif buses %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Buses</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for bus in buses %}
+                                <li class="list-group-item">{{ bus.busNumber }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% elif schedules %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Schedules</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for schedule in schedules %}
+                                <li class="list-group-item">{{ schedule.bus.busNumber }} - {{ schedule.route.origin }} to {{ schedule.route.destination }} at {{ schedule.departureTime }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% elif routes %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Routes</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            {% for route in routes %}
+                                <li class="list-group-item">{{ route.origin }} to {{ route.destination }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    No results found for your query.
+                </div>
+            {% endif %}
+        {% endif %}
+        <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</body>
+</html>

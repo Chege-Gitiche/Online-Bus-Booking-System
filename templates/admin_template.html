@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap5.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <!-- Top navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar"
+                aria-controls="offcanvasExample">
+                <span class="navbar-toggler-icon" data-bs-target="#sidebar"></span>
+            </button>
+            <a class="navbar-brand me-auto ms-lg-0 ms-3 text-uppercase fw-bold" href="{% url 'admin_template' %}">BasiBasi</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavBar"
+                aria-controls="topNavBar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="topNavBar">
+                <form class="d-flex ms-auto my-3 my-lg-0" action="{% url 'search_results' %}" method="get">
+                    <div class="input-group">
+                        <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="q" />
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle ms-2" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <img src="{{ user.profile.profile_img.url }}" class="rounded-circle" alt=""
+                                style="width: 40px; height: 36px; margin-right: 10px;">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'settings' %}">Account Settings</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End top navigation bar -->
+
+    <!-- Offcanvas sidebar -->
+    <div class="offcanvas offcanvas-start sidebar-nav bg-dark" tabindex="-1" id="sidebar">
+        <div class="offcanvas-body p-0">
+            <!-- Sidebar navigation -->
+            <nav class="navbar-dark">
+                <ul class="navbar-nav">
+                    <li>
+                        <div class="text-muted small fw-bold text-uppercase px-3">
+                            DASHBOARD
+                        </div>
+                    </li>
+                    <li class="my-4">
+                        <hr class="dropdown-divider bg-light" />
+                    </li>
+                    <li>
+                        <div class="text-muted small fw-bold text-uppercase px-3 mb-3">
+                            Models
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'users' %}">
+                            <span class="me-2">
+                                <span>Users</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'routes_admin' %}">
+                            <span class="me-2">
+                                <span>Routes</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'buses' %}">
+                            <span class="me-2">
+                                <span>Bus</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'schedule' %}">
+                            <span class="me-2">
+                                <span>Schedule</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="my-4">
+                        <hr class="dropdown-divider bg-light" />
+                    </li>
+                    <li>
+                        <div class="text-muted small fw-bold text-uppercase px-3 mb-3">
+                            Extras
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'gender' %}">
+                            <span class="me-2">
+                                <span>Gender</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'user_stats' %}">
+                            <span class="me-2">
+                                <span>User Statistics</span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- End Offcanvas sidebar -->
+
+    <!-- Main content area -->
+    <main class="mt-5 pt-3">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar content -->
+                <div class="col-md-2">
+                    <!-- Placeholder for sidebar content -->
+                </div>
+
+                <!-- Main content -->
+                <div class="col-md-10">
+                    <div id="dashboard-content">
+                        <!-- Summary, cards, and charts -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4>Summary</h4>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <!-- Total Users Card -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-white h-100" style="background-color: #3498db;">
+                                    <div class="card-body py-4">
+                                        <h5 class="card-title">Total Users</h5>
+                                        <p class="card-text display-4">{{ total_users }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Total Buses Card -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-dark h-100" style="background-color: #f1c40f;">
+                                    <div class="card-body py-4">
+                                        <h5 class="card-title">Total Buses</h5>
+                                        <p class="card-text display-4">{{ total_buses }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Total Routes Card -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-white h-100" style="background-color: #2ecc71;">
+                                    <div class="card-body py-4">
+                                        <h5 class="card-title">Total Routes</h5>
+                                        <p class="card-text display-4">{{ total_routes }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Total Schedules Card -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card text-white h-100" style="background-color: #e74c3c;">
+                                    <div class="card-body py-4">
+                                        <h5 class="card-title">Total Schedules</h5>
+                                        <p class="card-text display-4">{{ total_schedules }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="row mt-4">
+                            <!-- Bus Capacities Pie Chart -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title text-center">Bus Capacities</h4>
+                                        <div class="chart-container" style="position: relative; height:300px;">
+                                            <canvas id="busCapacityChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- End Charts Section -->
+
+                    </div>
+
+                    <!-- Dynamic content area -->
+                    <div id="content"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- End main content area -->
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.2/dist/chart.min.js"></script>
+    <script src="{% static 'js/jquery-3.5.1.js' %}"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        // Script for sidebar link handling
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const url = this.getAttribute('data-url');
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        // Replace content next to sidebar
+                        document.getElementById('dashboard-content').style.display = 'none'; // Hide the default dashboard content
+                        document.getElementById('content').innerHTML = data; // Show the fetched content
+                    });
+            });
+        });
+
+        // Chart.js script for bus capacity chart
+        var busData = JSON.parse('{{ bus_data|escapejs }}');
+        var ctxBus = document.getElementById('busCapacityChart').getContext('2d');
+        var busCapacityChart = new Chart(ctxBus, {
+            type: 'pie',
+            data: {
+                labels: busData.labels,
+                datasets: [{
+                    data: busData.data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.9)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.9)',
+                        'rgba(224, 43, 122, 0.7)',
+                        'rgba(154, 56, 235, 0.8)',
+                        'rgba(225, 106, 186, 0.8)',
+                        'rgba(175, 122, 159, 0.8)',
+                        'rgba(145, 190, 219, 0.8)',
+                        'rgba(217, 109, 44, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -35,7 +34,8 @@
 <body class="bg-gray-100">
     <div class="container mx-auto mt-10 p-5 bg-white rounded-lg shadow-lg max-w-4xl">
         <h1 class="text-3xl font-bold leading-none text-gray-900 tracking-tight mt-3 mb-6">
-            <a href="/home" class="text-blue-600">Home</a> / Account Settings for <b>{{ user.username }}</b>
+            <a href="{% if user.is_superuser %}/admin_template{% else %}/home{% endif %}" class="text-blue-600">Home</a> / Account Setting for 
+            <b>{{ user.username }}</b>
         </h1>
         <hr class="mb-6">
         <div class="grid lg:grid-cols-3 gap-8">
@@ -57,7 +57,7 @@
                         <div class="col-span-2 mb-4">
                             <label for="bio" class="block text-gray-700 font-medium mb-2">Bio</label>
                             <textarea id="bio" name="bio" rows="3" class="shadow-none bg-gray-100 p-2 border border-gray-300 rounded-lg w-full">{{ user_profile.bio }}</textarea>
-                        </div> 
+                        </div>
                         <div class="col-span-2 mb-4">
                             <label for="address" class="block text-gray-700 font-medium mb-2">Address</label>
                             <input type="text" id="address" name="address" value="{{ user_profile.address }}" class="shadow-none bg-gray-100 p-2 border border-gray-300 rounded-lg w-full">
@@ -81,17 +81,27 @@
                             <label for="phone_number" class="block text-gray-700 font-medium mb-2">Phone Number</label>
                             <input type="tel" id="phone_number" name="phone_number" value="{{ user_profile.phone_number }}" class="shadow-none bg-gray-100 p-2 border border-gray-300 rounded-lg w-full">
                         </div>
-                    </div> 
+                        <div class="col-span-2 mb-4">
+                            <label for="gender" class="block text-gray-700 font-medium mb-2">Gender</label>
+                            <select id="gender" name="gender" class="shadow-none bg-gray-100 p-2 border border-gray-300 rounded-lg w-full">
+                                <option value="" {% if user_profile.gender == "" %}selected{% endif %}>Select Gender</option>
+                                <option value="male" {% if user_profile.gender == "male" %}selected{% endif %}>Male</option>
+                                <option value="female" {% if user_profile.gender == "female" %}selected{% endif %}>Female</option>
+                                <option value="other" {% if user_profile.gender == "other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="flex flex-col items-center mt-6 space-y-4">
                         <div class="space-x-4">
                             <button class="p-2 px-4 rounded bg-gray-50 text-red-500 border border-grey-300 hover:bg-gray-200 hover:text-red-700">
-                                <a href="/">Cancel</a>
+                                <a href="{% if user.is_superuser %}/admin_template{% else %}/home{% endif %}">Cancel</a>
                             </button>
                             <button type="submit" class="p-2 px-4 rounded bg-blue-700 text-white hover:bg-blue-800">
                                 Save
                             </button>
                         </div>
+                        
                         <a href="/password_reset" class="text-blue-700 hover:underline">Forgot your password?</a>
                     </div>
                     
