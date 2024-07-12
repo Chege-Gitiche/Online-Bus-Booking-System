@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'phonenumber_field',
     'django_daraja',
+    'django_heroku'
     'mpesa',
 ]
 
@@ -169,7 +170,6 @@ PHONENUMBER_DB_FORMAT = 'NATIONAL'
 LOGOUT_REDIRECT_URL='/login'
 LOGIN_REDIRECT_URL = '/home'
 
-django_heroku.settings(locals())
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -236,5 +236,5 @@ MPESA_CONFIG = {
     'TRANSACTION_TYPE': 'CustomerBuyGoodsOnline',
 }
 
-
+django_heroku.settings(locals())
 
