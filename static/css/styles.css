@@ -1,0 +1,29 @@
+.feedback-form-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.feedback-submit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.feedback-submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.custom-comment {
+    max-width: 400px; /* Adjust to make the input smaller */
+    height: 100px; /* Adjust height as needed */
+}

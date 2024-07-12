@@ -1,20 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm
 from .models import OtpToken
 from django.contrib import messages
-
+from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from collections import defaultdict
-
+from django.db.models import Avg
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
-from .models import Profile, Route, Schedule, Bus, Seat, Booking,User
+from .models import Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
 from django.views.decorators.csrf import csrf_exempt
@@ -851,11 +851,16 @@ def admin(request):
     total_buses = Bus.objects.count()
     total_routes = Route.objects.count()
     total_schedules = Schedule.objects.count()
+    average_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
     buses = Bus.objects.all()
     bus_data = {
         "labels": [bus.busNumber for bus in buses],
         "data": [bus.capacity for bus in buses],
     }
+
+    # Round the average rating to a whole number if it exists
+    if average_rating is not None:
+        average_rating = round(average_rating)
 
     context = {
         'total_users': total_users,
@@ -863,12 +868,13 @@ def admin(request):
         'total_routes': total_routes,
         'total_schedules': total_schedules,
         'bus_data': json.dumps(bus_data),
+        'avg_rating': average_rating,
     }
 
     return render(request, 'admin_template.html', context)
 
 
-def generate_pdf(request):
+def generate_pdf(request, booking_id):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
 
@@ -877,6 +883,7 @@ def generate_pdf(request):
     # Fetch user and profile details
     user = request.user
     profile = Profile.objects.get(user=request.user)
+    
 
     # Styles
     styles = getSampleStyleSheet()
@@ -1007,3 +1014,26 @@ def search_results(request):
     }
 
     return render(request, 'search_results.html', context)
+
+@login_required
+def submit_feedback(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = request.user.profile
+            feedback.save()
+            return redirect('index')
+    else:
+        form = FeedbackForm()
+    return render(request, 'submit_feedback.html', {'form': form})
+
+
+@login_required
+def feedback_list(request):
+    feedback_list = Feedback.objects.all().order_by('-createdAt')  # Assuming you want the newest feedback first
+    paginator = Paginator(feedback_list, 10)  # Show 10 feedbacks per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'feedback_list.html', {'page_obj': page_obj})

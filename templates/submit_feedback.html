@@ -1,0 +1,26 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Feedback Submission{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+<div class="container mt-4">
+    <h2>Submit Feedback</h2>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {% if field.name == 'comment' %}
+                    <!-- Custom rendering for the comment field -->
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <textarea class="form-control custom-comment" id="{{ field.id_for_label }}" name="{{ field.name }}">{{ field.value|default_if_none:'' }}</textarea>
+                {% else %}
+                    {{ field.errors }}
+                    {{ field.label_tag }} {{ field }}
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+    </form>
+</div>
+{% endblock content %}

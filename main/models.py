@@ -132,7 +132,7 @@ class Payment(models.Model):
 class Feedback(models.Model):
     feedbackID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.PositiveIntegerField()
     comments = models.TextField(blank=True)
     createdAt = models.DateTimeField(auto_now_add=True)

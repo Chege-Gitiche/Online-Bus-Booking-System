@@ -45,7 +45,6 @@ urlpatterns= [
     path('login_user', views.login_user, name="login"),
 
     path('routes/', views.routes_view, name='routes'),
-    path('search/', views.search_view, name='search'),
 
     path('seat-selection/<int:bus_id>/', views.seat_selection_view, name='seat_selection'),
     path('booking_details/<str:selected_seats>/', views.booking_details, name='booking_details'),
@@ -54,8 +53,11 @@ urlpatterns= [
     path('lockscreen', views.lockscreen, name='lockscreen'),
 
     path('booking', views.booking, name='booking'),
-    path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
+    path('generate_pdf/<int:booking_id>/', views.generate_pdf, name='generate_pdf'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+
+    path('submit_feedback/', views.submit_feedback, name='submit_feedback'),
+    path('feedback/', views.feedback_list, name='feedback_list'),
 ]
