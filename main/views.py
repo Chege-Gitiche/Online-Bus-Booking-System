@@ -1036,7 +1036,7 @@ def submit_feedback(request):
 @login_required
 def feedback_list(request):
     feedback_list = Feedback.objects.all().order_by('-createdAt')  # Assuming you want the newest feedback first
-    paginator = Paginator(feedback_list, 10)  # Show 10 feedbacks per page
+    paginator = Paginator(feedback_list, 3)  # Show 10 feedbacks per page
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

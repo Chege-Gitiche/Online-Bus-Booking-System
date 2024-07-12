@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'phonenumber_field',
     'django_daraja',
-    'django_heroku'
+    'django_heroku',
     'mpesa',
 ]
 
