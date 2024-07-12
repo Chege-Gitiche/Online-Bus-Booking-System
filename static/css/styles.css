@@ -27,3 +27,9 @@
     max-width: 400px; /* Adjust to make the input smaller */
     height: 100px; /* Adjust height as needed */
 }
+
+.standard-width {
+    width: 100%; /* This makes the inputs and button take the full width of their parent container */
+    max-width: 500px; /* Adjust this value to set your desired standard width */
+    margin: auto; /* This centers the element within its parent */
+}

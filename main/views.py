@@ -18,7 +18,6 @@ from .models import Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
 from django.views.decorators.csrf import csrf_exempt
-from .generateAcesstoken import get_access_token
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
 import json
@@ -1020,10 +1019,15 @@ def submit_feedback(request):
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.user = request.user.profile
-            feedback.save()
-            return redirect('index')
+            # Check if both fields are filled out
+            comment = form.cleaned_data.get('comment')  # Assuming 'comment' is a field in your form
+            rating = form.cleaned_data.get('rating')  # Assuming 'rating' is another field in your form
+            if comment and rating:  # Replace 'comment' and 'rating' with your actual field names
+                form.save()
+                messages.success(request, 'Feedback submitted successfully!')
+                return redirect('index')  # Redirect to a new URL
+            else:
+                messages.error(request, 'Please fill out all fields.')
     else:
         form = FeedbackForm()
     return render(request, 'submit_feedback.html', {'form': form})

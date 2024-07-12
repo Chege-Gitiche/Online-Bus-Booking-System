@@ -6,21 +6,37 @@
 
 <div class="container mt-4">
     <h2>Submit Feedback</h2>
-    <form method="post" class="needs-validation" novalidate>
-        {% csrf_token %}
-        {% for field in form %}
-            <div class="form-group">
-                {% if field.name == 'comment' %}
-                    <!-- Custom rendering for the comment field -->
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    <textarea class="form-control custom-comment" id="{{ field.id_for_label }}" name="{{ field.name }}">{{ field.value|default_if_none:'' }}</textarea>
-                {% else %}
-                    {{ field.errors }}
-                    {{ field.label_tag }} {{ field }}
-                {% endif %}
+
+    {% if messages %}
+    <div class="alert-messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
             </div>
         {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+    <p>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
+        {% if field.name == 'comment' %}
+            <textarea class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" rows="5" placeholder="Enter your comments here..."></textarea>
+        {% else %}
+            <input type="{{ field.field.widget.input_type }}" class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" placeholder="{{ field.help_text }}">
+        {% endif %}
+        {% if field.errors %}
+            <div class="invalid-feedback">
+                {{ field.errors|join:", " }}
+            </div>
+        {% endif %}
+    </p>
+{% endfor %}
+        </div>
         <button type="submit" class="btn btn-primary">Submit Feedback</button>
     </form>
 </div>
-{% endblock content %}
+{% endblock %}
