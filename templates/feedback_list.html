@@ -1,0 +1,48 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Booking Status{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<h1>Feedback List</h1>
+
+{% for feedback in page_obj %}
+<div class="container mt-5">
+    <div class="row">
+            <div class="col-md-4 mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        {{ feedback.user.user.username }}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Rating: {{ feedback.rating }}</h5>
+                        <p class="card-text">{{ feedback.comments }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col">
+                <p>No feedback submitted yet.</p>
+            </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% endblock content %}              

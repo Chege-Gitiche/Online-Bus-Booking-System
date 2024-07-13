@@ -35,7 +35,6 @@
                         </button>
                     </div>
                 </form>
-                
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle ms-2" href="#" role="button" data-bs-toggle="dropdown"
@@ -102,6 +101,13 @@
                             </span>
                         </a>
                     </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'booking_form' %}">
+                            <span class="me-2">
+                                <span>Bookings</span>
+                            </span>
+                        </a>
+                    </li>
                     <li class="my-4">
                         <hr class="dropdown-divider bg-light" />
                     </li>
@@ -114,13 +120,6 @@
                         <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'gender' %}">
                             <span class="me-2">
                                 <span>Gender</span>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'user_stats' %}">
-                            <span class="me-2">
-                                <span>User Statistics</span>
                             </span>
                         </a>
                     </li>
@@ -186,6 +185,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="card text-white h-100" style="background-color: #f9ed07;">
+                                <div class="card-body py-4">
+                                    <h5 class="card-title">Average feedback rating</h5>
+                                    <p class="card-text display-4">{{ avg_rating }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                         <!-- Charts Section -->
                         <div class="row mt-4">

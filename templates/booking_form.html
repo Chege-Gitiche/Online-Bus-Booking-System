@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buses Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+        integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="container my-4">
+        <h4>Booking List</h4>
+        <table class="table bg-white">
+            <thead class="bg-info">
+                <tr class="text-white">
+                    <th scope="col">#</th>
+                    <th scope="col">User</th>
+                    <th scope="col">seatNumber</th>
+                    <th scope="col">bookingDate </th>
+                    <th scope="col">totalPrice</th>
+                    <th scope="col">Actions</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ booking.user }}</td>
+                    <td>{{ booking.seatNumber }}</td>
+                    <td>{{ booking.bookingDate }}</td>
+                    <td>{{ booking.totalPrice }}</td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a class="btn btn-danger btn-sm" href="">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No buses found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add Bus Button -->
+        <a class="btn btn-primary" href="{% url 'add_booking' %}">
+            <i class="fas fa-plus"></i> Add Bus
+        </a>
+        <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
+        <!-- End Add Bus Button -->
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

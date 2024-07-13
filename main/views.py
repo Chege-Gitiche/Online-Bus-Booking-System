@@ -1,23 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm
 from .models import OtpToken
 from django.contrib import messages
-
+from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from collections import defaultdict
-
+from django.db.models import Avg
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
-from .models import Profile, Route, Schedule, Bus, Seat, Booking
+from .models import Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.http import HttpResponse
-from django.views import View
+from django_daraja.mpesa.core import MpesaClient
+from django.views.decorators.csrf import csrf_exempt
+from .generateAcesstoken import get_access_token
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
 import json
+from datetime import datetime
+import base64
+import json
+import requests
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Frame, PageTemplate
+from reportlab.lib import colors
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login")
@@ -291,6 +306,7 @@ def settings(request):
     return render(request, 'setting.html', {'user_profile': user_profile})
 
 #dashboard
+#dashboard
 @login_required(login_url="/login")
 def users(request):
     profiles = Profile.objects.select_related('user').all()
@@ -562,36 +578,15 @@ def gender(request):
         'labels': ['Male', 'Female', 'Other'],
         'data': [male_count, female_count, other_count]
     }
+    label = ['Male', 'Female', 'Other']
+    data = [male_count, female_count, other_count]
 
     # Convert gender_data to JSON string
     gender_data_json = json.dumps(gender_data)
 
-    return render(request, 'gender.html', {'gender_data': gender_data_json})
-
-
-def search_results(request):
-    query = request.GET.get('q', '')
-    error_message = None
-
-    users = User.objects.filter(username__icontains=query)
-    buses = Bus.objects.filter(busNumber__icontains=query)
-    schedules = Schedule.objects.filter(route__origin__icontains=query) | Schedule.objects.filter(route__destination__icontains=query)
-    routes = Route.objects.filter(origin__icontains=query) | Route.objects.filter(destination__icontains=query)
-
-    if not users.exists() and not buses.exists() and not schedules.exists() and not routes.exists():
-        error_message = "No results found for your query."
-
-    context = {
-        'query': query,
-        'users': users,
-        'buses': buses,
-        'schedules': schedules,
-        'routes': routes,
-        'error_message': error_message,
-    }
-
-    return render(request, 'search_results.html', context)
-
+    return render(request, 'gender.html', {'gender_data': gender_data_json,
+                                           'label': label,
+                                           'data': data})
 
 #customer views
 
@@ -701,15 +696,20 @@ def booking_details(request, selected_seats):
     total_amount = fare * len(selected_seat_objects)
 
     if request.method == 'POST':
-        form = BookingDetailsForm(request.POST)
+        form = BookingForm(request.POST)
         if form.is_valid():
+
+            print("Form is valid. Saving booking...")
+
             booking = Booking.objects.create(
                 user=request.user,
                 scheduleID=schedule,
                 seatNumber=seat_numbers,
                 totalPrice=total_amount
             )
-            return redirect('payment', booking_id=booking.id)
+            
+
+            return redirect('booking')
     else:
         initial_data = {
             'payment_method': user_profile.payment_method,
@@ -729,9 +729,26 @@ def booking_details(request, selected_seats):
     return render(request, 'booking_details.html', context)
 
 @login_required(login_url="/login/")
-def payment(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    return render(request, 'payment.html', {'booking': booking})
+def payment(request, booking_user):
+    cl = MpesaClient()
+    user_profile = Profile.objects.get(user=request.user)
+    # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
+    phone_number = user_profile.phone_number
+    amount = 500
+    account_reference = 'reference'
+    transaction_desc = 'Description'
+    callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+
+    if response.status_code == 200:
+        messages.success(request, 'Payment prompt sent to your phone')
+        booking.save()
+        booking = get_object_or_404(Booking, user=booking_user)
+        return render(request, 'payment.html', {'booking': booking})
+    else:
+        messages.error(request, 'Failed to send payment prompt to your phone')
+        return render(request, 'booking_details.html', context)
+    
 
 
 
@@ -749,20 +766,274 @@ def lockscreen(request):
 
 def booking(request):
     cl = MpesaClient()
+    user_profile = Profile.objects.get(user=request.user)
     # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
-    phone_number = '0114679087'
+    phone_number = user_profile.phone_number
     amount = 1
     account_reference = 'reference'
     transaction_desc = 'Description'
-    callback_url = 'https://darajambili.herokuapp.com/express-payment';
+    callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
     response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+    
+    if response.status_code == 200:
+        messages.success(request, 'Payment prompt sent to your phone')
+         # Retrieve booking details from session
+        booking_details = request.session.get('booking_details')
+    
+    # Print the booking details to debug
+        print("Booking Details:", booking_details)
+        payment_success = True
 
-     # Check the response status code to determine success or failure
-    if response.status_code == 200:  # Adjust based on your MpesaClient implementation
-        messages.success(request, "Payment request sent successfully.")
     else:
-        messages.error(request, "Payment request failed.")
+        messages.error(request, 'Failed to send payment prompt to your phone')
 
-    # Redirect to booking.html or any other appropriate page
-    return render(request, 'booking.html')  # Replace 'booking_page' with your actual URL name
+    return render(request, 'booking.html')
+     
+@csrf_exempt
+def mpesa_callback(request):  
+            access_token_response = get_access_token(request)
+            access_token = access_token_response.content.decode('utf-8')
+            access_token_json = json.loads(access_token)
+            access_token = access_token_json.get('access_token')
+            query_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query'
+            business_short_code = '174379'
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+            password = base64.b64encode((business_short_code + passkey + timestamp).encode()).decode()
+            checkout_request_id = 'ws_CO_04072023004444401768168060'
 
+            query_headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token
+            }
+
+            query_payload = {
+                'BusinessShortCode': business_short_code,
+                'Password': password,
+                'Timestamp': timestamp,
+                'CheckoutRequestID': checkout_request_id
+            }
+            
+            try:
+                response = requests.post(query_url, headers=query_headers, json=query_payload)
+                response.raise_for_status()
+                # Raise exception for non-2xx status codes
+                response_data = response.json()
+                
+                if 'ResultCode' in response:
+                    result_code = response['ResultCode']
+                    if result_code == '1037':
+                        message = "1037 Timeout in completing transaction"
+                    elif result_code == '1032':
+                        message = "1032 Transaction has been canceled by the user"
+                    elif result_code == '1':
+                        message = "1 The balance is insufficient for the transaction"
+                    elif result_code == '0':
+                        message = "0 The transaction was successful"
+                    else:
+                        message = "Unknown result code: " + result_code
+                else:
+                    message = "Error in response"
+                
+                return JsonResponse({'message': message})  # Return JSON response
+            except Exception as e:
+                return JsonResponse({'error': 'Error: ' + str(e)})  # Return JSON response for any other error
+
+@login_required
+def admin(request):
+    # Ensure only superusers can access this view
+    if not request.user.is_superuser:
+        # Redirect to regular home page or handle unauthorized access
+        messages.error(request, "You are not authorized to view this page.")
+        return redirect('index')
+
+    total_users = Profile.objects.count()
+    total_buses = Bus.objects.count()
+    total_routes = Route.objects.count()
+    total_schedules = Schedule.objects.count()
+    average_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
+    buses = Bus.objects.all()
+    bus_data = {
+        "labels": [bus.busNumber for bus in buses],
+        "data": [bus.capacity for bus in buses],
+    }
+
+    # Round the average rating to a whole number if it exists
+    if average_rating is not None:
+        average_rating = round(average_rating)
+
+    context = {
+        'total_users': total_users,
+        'total_buses': total_buses,
+        'total_routes': total_routes,
+        'total_schedules': total_schedules,
+        'bus_data': json.dumps(bus_data),
+        'avg_rating': average_rating,
+    }
+
+    return render(request, 'admin_template.html', context)
+
+
+def generate_pdf(request, booking_id):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+
+    elements = []
+
+    # Fetch user and profile details
+    user = request.user
+    profile = Profile.objects.get(user=request.user)
+    
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=18, spaceAfter=14)
+    heading_style = ParagraphStyle('Heading', parent=styles['Heading2'], fontSize=14, spaceAfter=10)
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=12)
+    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=12, textColor=colors.darkgrey, fontName='Times-Roman', spaceBefore=20)
+
+    # Title
+    elements.append(Paragraph('BUS TICKET', title_style))
+    elements.append(Paragraph(f'Booking ID: 1410250349', normal_style))
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Trip Details
+    trip_details = [
+        ['Trip Details'],
+        ['Bus:', 'KCY'],
+        ['Date:', '09-09-2014, 00:00'],
+        ['Departure from:', 'Nairobi'],
+        ['Arrive to:', 'Kisumu'],
+        ['Ticket Type:', 'Regular 1'],
+        ['Seats:', '1'],
+    ]
+
+    trip_table = Table(trip_details, colWidths=[2 * inch, 4.5 * inch])
+    trip_table.setStyle(TableStyle([
+        ('SPAN', (0, 0), (-1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(trip_table)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Customer and Booking Details
+    customer_details = [
+        ['Customer and Booking Details'],
+        ['Customer Name:', user.username],
+        ['Phone:', profile.phone_number],
+        ['Booking Total:', '500'],
+        ['Online Deposit Payment:', 'through cash'],
+    ]
+
+    customer_table = Table(customer_details, colWidths=[2 * inch, 4.5 * inch])
+    customer_table.setStyle(TableStyle([
+        ('SPAN', (0, 0), (-1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+
+    elements.append(customer_table)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    # Footer (optional)
+    footer_text = "Notes:Thank you for the payment"
+    elements.append(Paragraph(footer_text, footer_style))
+
+    doc.build(elements)
+
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='invoice.pdf')
+
+
+
+@login_required(login_url="/login")
+def booking_form(request):
+    bookings = Booking.objects.all()
+
+    context = {
+        'bookings': bookings,
+    }
+
+    return render(request, 'booking_form.html', context)
+
+def add_booking(request):
+     if request.method == 'POST':
+        route_id = request.POST.get('routeID')
+        origin = request.POST.get('origin')
+        destination = request.POST.get('destination')
+        distance = request.POST.get('distance')
+        fare = request.POST.get('fare')
+
+        Route.objects.create(
+            routeID=route_id,
+            origin=origin,
+            destination=destination,
+            distance=distance,
+            fare=fare
+        )
+
+        return redirect('routes_admin')
+
+     return render(request, 'add_booking.html')
+
+
+def search_results(request):
+    query = request.GET.get('q', '')
+    error_message = None
+
+    users = User.objects.filter(username__icontains=query)
+    buses = Bus.objects.filter(busNumber__icontains=query)
+    schedules = Schedule.objects.filter(route__origin__icontains=query) | Schedule.objects.filter(route__destination__icontains=query)
+    routes = Route.objects.filter(origin__icontains=query) | Route.objects.filter(destination__icontains=query)
+
+    if not users.exists() and not buses.exists() and not schedules.exists() and not routes.exists():
+        error_message = "No results found for your query."
+
+    context = {
+        'query': query,
+        'users': users,
+        'buses': buses,
+        'schedules': schedules,
+        'routes': routes,
+        'error_message': error_message,
+    }
+
+    return render(request, 'search_results.html', context)
+
+@login_required
+def submit_feedback(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = request.user.profile
+            feedback.save()
+            return redirect('index')
+    else:
+        form = FeedbackForm()
+    return render(request, 'submit_feedback.html', {'form': form})
+
+
+@login_required
+def feedback_list(request):
+    feedback_list = Feedback.objects.all().order_by('-createdAt')  # Assuming you want the newest feedback first
+    paginator = Paginator(feedback_list, 10)  # Show 10 feedbacks per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'feedback_list.html', {'page_obj': page_obj})

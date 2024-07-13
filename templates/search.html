@@ -1,3 +1,8 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Search Results{% endblock %}
+{% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,7 +215,7 @@
                 </div>
             </div>
             <div class="modify-section">
-                <form method="POST" action="{% url 'search' %}" class="modify-form">
+                <form method="POST" action="{% url 'search_view' %}" class="modify-form">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="origin" class="form-label">Origin:</label>
@@ -305,3 +310,5 @@
     </div>
 </body>
 </html>
+
+{% endblock %}

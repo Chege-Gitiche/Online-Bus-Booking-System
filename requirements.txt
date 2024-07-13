@@ -13,3 +13,4 @@ django-phonenumber-field==8.0.0
 django-admin-tools
 django-admin-charts
 django_daraja
+django-heroku

@@ -32,8 +32,12 @@ urlpatterns= [
 
 
     path('gender/', views.gender, name='gender'),
-    path('search/', views.search_results, name='search_results'),
+
+    path('search_results/', views.search_results, name='search_results'),
+    path('search_view/', views.search_view, name='search_view'),
     
+    path('booking_form/', views.booking_form, name='booking_form'),
+    path('booking_form/add/', views.add_booking, name='add_booking'),
 
     path('sign_up',views.signUp,name='sign_up'),
     path("verify-email/<slug:username>", views.verifyEmail, name="verify-email"),
@@ -41,7 +45,6 @@ urlpatterns= [
     path('login_user', views.login_user, name="login"),
 
     path('routes/', views.routes_view, name='routes'),
-    path('search_view/', views.search_view, name='search_view'),
 
     path('seat-selection/<int:bus_id>/', views.seat_selection_view, name='seat_selection'),
     path('booking_details/<str:selected_seats>/', views.booking_details, name='booking_details'),
@@ -50,7 +53,11 @@ urlpatterns= [
     path('lockscreen', views.lockscreen, name='lockscreen'),
 
     path('booking', views.booking, name='booking'),
+    path('generate_pdf/<int:booking_id>/', views.generate_pdf, name='generate_pdf'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+
+    path('submit_feedback/', views.submit_feedback, name='submit_feedback'),
+    path('feedback/', views.feedback_list, name='feedback_list'),
 ]

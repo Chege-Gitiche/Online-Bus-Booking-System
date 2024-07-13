@@ -13,6 +13,8 @@ import environ
 from pathlib import Path
 from datetime import timedelta
 import os
+import django_heroku
+import dj_database_url
 
 env = environ.Env(
     # set casting, default value
@@ -34,7 +36,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,9 +49,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
+    'rest_framework',
     'crispy_forms',
     'crispy_bootstrap5',
     'phonenumber_field',
+    'django_daraja',
+    'django_heroku'
+    'mpesa',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -92,8 +98,18 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        
+            'ENGINE': 'django.db.backends.postgresql',
+
+            'NAME': os.getenv('DB_NAME'),
+
+            'USER': os.getenv('DB_USER'),
+
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+
+            'HOST': os.getenv('DB_HOST'),
+
+            'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -142,8 +158,10 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 
 PHONENUMBER_DEFAULT_REGION = 'KE'
@@ -151,6 +169,7 @@ PHONENUMBER_DB_FORMAT = 'NATIONAL'
 
 LOGOUT_REDIRECT_URL='/login'
 LOGIN_REDIRECT_URL = '/home'
+
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -202,3 +221,20 @@ MPESA_INITIATOR_USERNAME = 'testapi'
 # Plaintext password for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
 
 MPESA_INITIATOR_SECURITY_CREDENTIAL = 'Safaricom999!*!'
+
+
+MPESA_CONFIG = {
+    'CONSUMER_KEY': 'nhCUnCKLL7Lqulu7pihdkxXeMSGnUMpCCirIJaZe9dOtf8v1',
+    'CONSUMER_SECRET': 'sXKDXSzfgwkogCirI0lAezP29JQJGyhYxWSDGmwbu9RYz9tBaaL9SzcxEczPScLs',
+    'CERTIFICATE_FILE': None,
+    'HOST_NAME': 'https://558d-41-90-187-109.ngrok.io',
+    'PASS_KEY': 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
+    'SAFARICOM_API': 'https://sandbox.safaricom.co.ke',
+    'AUTH_URL': '/oauth/v1/generate?grant_type=client_credentials',
+    'SHORT_CODE': '174379',
+    'TILL_NUMBER': None,
+    'TRANSACTION_TYPE': 'CustomerBuyGoodsOnline',
+}
+
+django_heroku.settings(locals())
+

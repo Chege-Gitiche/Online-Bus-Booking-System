@@ -32,15 +32,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log(genderData)
             const genderData = JSON.parse('{{ gender_data|escapejs }}');
-            console.log(genderData);
-
             const labels = genderData.labels;
             const data = genderData.data;
 
             const ctx = document.getElementById('genderDistributionChart').getContext('2d');
             new Chart(ctx, {
-                type: 'bar',
+                type: 'pie',
                 data: {
                     labels: labels,
                     datasets: [{

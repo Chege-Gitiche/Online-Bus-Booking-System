@@ -33,13 +33,12 @@ class Profile(models.Model):
         ('paypal', 'PayPal'),
     )
     payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, blank=True)
-    
     GENDER_CHOICES = (
         ('male', 'Male'),
         ('female', 'Female'),
         ('other', 'Other'),
     )
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)  
 
     def __str__(self):
         return self.user.username
@@ -133,7 +132,7 @@ class Payment(models.Model):
 class Feedback(models.Model):
     feedbackID = models.AutoField(primary_key=True)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.PositiveIntegerField()
     comments = models.TextField(blank=True)
     createdAt = models.DateTimeField(auto_now_add=True)

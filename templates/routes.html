@@ -1,3 +1,8 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Available Routes{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,7 +74,7 @@
             <div class="col-md-7">
                 <h1>Your Journey Starts Here</h1>
                 <div class="catchy-phrase">Book Your Trip Now</div>
-                <form method="POST" action="{% url 'search' %}" class="mt-4">
+                <form method="POST" action="{% url 'search_view' %}" class="mt-4">
                     {% csrf_token %}
                     {% if message %}
                         <div class="alert alert-danger" role="alert">
@@ -122,3 +127,5 @@
     </script>
 </body>
 </html>
+
+{% endblock content %}

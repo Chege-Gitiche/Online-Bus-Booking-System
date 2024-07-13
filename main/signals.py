@@ -1,5 +1,5 @@
 #signals.py
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,  pre_save
 from django.conf import settings
 from django.dispatch import receiver
 from .models import OtpToken
@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from .models import Profile, Bus, Seat
+from .models import Profile, Bus, Seat, Booking,Schedule
 
 user = get_user_model()
  
@@ -58,4 +58,80 @@ def create_seats(sender, instance, created, **kwargs):
     if created:
         instance.create_seats()
 
+
+@receiver(pre_save, sender=Bus, dispatch_uid='alert users of bus')
+def bus_status_change(sender, instance, **kwargs):
+    if instance.busNumber:
+        old_bus = Bus.objects.get(busNumber=instance.busNumber)
+        if old_bus.status == 'Active' and instance.status == 'Maintenance':
+            # Fetch all bookings for this bus
+            bookings = Booking.objects.filter(scheduleID__bus=instance)
+            for booking in bookings:
+                user_profile = booking.user
+                # Send notification
+                send_bus_maintenance_notification(user_profile, instance)
+
+def send_bus_maintenance_notification(user_profile, bus):
+        subject="Bus change notification"
+        message = f"""
+        Dear {user_profile.user.username},
+        
+        We regret to inform you that the bus you were scheduled to board {bus.busNumber} is now under maintenance.
+        We will provide an email briefly on the new bus that will be assigned to you.
+
+        Best regards,
+        Basi Bus Team
+        """
+
+        sender = "chegegitiche254@gmail.com"
+        receiver = [user_profile.user.email]
+
+
+        send_mail(
+                subject,
+                message,
+                sender,
+                receiver,
+                fail_silently=False,
+        )
+        
+
+@receiver(pre_save, sender=Schedule)
+def schedule_bus_change(sender, instance, **kwargs):
+    if instance.pk:
+        old_schedule = Schedule.objects.get(pk=instance.pk)
+        if old_schedule.bus != instance.bus:
+            # Fetch all bookings for this schedule
+            bookings = Booking.objects.filter(scheduleID=instance)
+            for booking in bookings:
+                user_profile = booking.user
+                # Send notification
+                send_bus_change_notification(user_profile, old_schedule.bus, instance.bus, instance)
+
+def send_bus_change_notification(user_profile, old_bus, new_bus, schedule):
+    subject="Bus Reallocation notification"
+    message = f"""
+    Dear {user_profile.user.username},
+    
+    We would like to inform you that the bus for your scheduled trip (Schedule ID: {schedule.scheduleID}) has been changed.
+    
+    Old Bus: {old_bus.busNumber}
+    New Bus: {new_bus.busNumber}
+    
+    Please contact our support team if you have any questions or concerns.
+    
+    Best regards,
+    Basi Bus Team
+    """
+
+    sender = "chegegitiche254@gmail.com"
+    receiver = [user_profile.user.email]
+    
+    send_mail(
+            subject,
+            message,
+            sender,
+            receiver,
+            fail_silently=False,
+    )
   
