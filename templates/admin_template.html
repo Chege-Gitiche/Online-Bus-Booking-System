@@ -121,6 +121,21 @@
                             </span>
                         </a>
                     </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'user_stats' %}">
+                            <span class="me-2">
+                                <span>User Stats</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link px-3 sidebar-link" data-url="{% url 'rating_distribution' %}">
+                            <span class="me-2">
+                                <span>Feedback Analysis</span>
+                            </span>
+                        </a>
+                    </li>
+
                 </ul>
             </nav>
         </div>
@@ -236,89 +251,51 @@
             });
         });
 
-        // Chart.js script for bus capacity chart
-        var busData = JSON.parse('{{ bus_data|escapejs }}');
-        var ctxBus = document.getElementById('busCapacityChart').getContext('2d');
-        var busCapacityChart = new Chart(ctxBus, {
-            type: 'pie',
-            data: {
-                labels: busData.labels,
-                datasets: [{
-                    data: busData.data,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.9)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.9)',
-                        'rgba(224, 43, 122, 0.7)',
-                        'rgba(154, 56, 235, 0.8)',
-                        'rgba(225, 106, 186, 0.8)',
-                        'rgba(175, 122, 159, 0.8)',
-                        'rgba(145, 190, 219, 0.8)',
-                        'rgba(217, 109, 44, 0.8)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
 
-        // Chart.js script for payment methods chart
-        var paymentData = JSON.parse('{{ payment_data|escapejs }}');
-        var ctxPayment = document.getElementById('paymentMethodsChart').getContext('2d');
-        var paymentMethodsChart = new Chart(ctxPayment, {
-            type: 'pie',
-            data: {
-                labels: paymentData.labels,
-                datasets: [{
-                    data: paymentData.data,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.9)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.9)',
-                        'rgba(224, 43, 122, 0.7)',
-                        'rgba(154, 56, 235, 0.8)',
-                        'rgba(225, 106, 186, 0.8)',
-                        'rgba(175, 122, 159, 0.8)',
-                        'rgba(145, 190, 219, 0.8)',
-                        'rgba(217, 109, 44, 0.8)'
-                    ]
-                }]
+// Assuming you have a Django context variable `bus_data` that contains capacity information
+var busData = JSON.parse('{{ bus_data|escapejs }}');
+var ctxBus = document.getElementById('busCapacityChart').getContext('2d');
+
+var busCapacityChart = new Chart(ctxBus, {
+    type: 'pie',
+    data: {
+        labels: busData.labels,
+        datasets: [{
+            data: busData.data,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.9)',  // Bright Pink
+                'rgba(54, 162, 235, 0.9)',   // Bright Blue
+                'rgba(255, 206, 86, 0.9)',   // Bright Yellow
+                'rgba(153, 102, 255, 0.9)',  // Purple
+                'rgba(75, 192, 192, 0.9)',   // Teal
+                'rgba(255, 159, 64, 0.9)',   // Orange
+                'rgba(255, 0, 0, 0.9)',      // Red
+                'rgba(0, 128, 0, 0.9)',      // Green
+                'rgba(0, 0, 255, 0.9)',      // Blue
+                'rgba(255, 165, 0, 0.9)',    // Orange (vivid)
+                'rgba(128, 0, 128, 0.9)',    // Purple (vivid)
+                'rgba(255, 20, 147, 0.9)'    // Deep Pink
+            ]
+
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
-                            }
-                        }
+            tooltip: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return tooltipItem.label + ': ' + tooltipItem.raw;  // Show count/tally
                     }
                 }
             }
-        });
+        }
+    }
+});
+
     </script>
 </body>
 </html>

@@ -22,7 +22,7 @@ class OtpToken(models.Model):
 # Profile model
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = PhoneNumberField(blank=True)
+    phone_number = models.IntegerField(blank=True)
     profile_img = models.ImageField(upload_to='profile_images/', default='blank-profile-picture.png')
     address = models.CharField(max_length=255, blank=True)
     bio = models.TextField(blank=True)
@@ -135,10 +135,12 @@ class Feedback(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.PositiveIntegerField()
     comments = models.TextField(blank=True)
+    suggestions = models.TextField(blank=True)  # New field for suggestions
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'Feedback {self.feedbackID}'
+        
 # UserNotifications model
 class UserNotification(models.Model):
     STATUS_CHOICES = [

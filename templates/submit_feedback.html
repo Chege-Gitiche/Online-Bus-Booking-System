@@ -5,38 +5,108 @@
 <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
 <div class="container mt-4">
-    <h2>Submit Feedback</h2>
+    <h2 class="text-center mb-4">We Value Your Feedback!</h2>
+    <div class="feedback-card">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Step 1: Rating -->
+            <div class="form-group">
+                <label for="rating" class="form-label">Rate Your Experience:</label>
+                <div class="star-rating">
+                    {% for star in stars %}
+                        <input type="radio" id="star-{{ star.id }}" name="rating" value="{{ star.value }}" required onclick="updateAdjective(this.value)" />
+                        <label for="star-{{ star.id }}" class="star">&#9733;</label>
+                    {% endfor %}
+                </div>
+                <div class="invalid-feedback">Please select a rating.</div>
+            </div>
 
-    {% if messages %}
-    <div class="alert-messages">
-        {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                {{ message }}
+            <!-- Adjective Display -->
+            <div class="form-group">
+                <p id="rating-adjective" class="text-center">Select a rating</p>
+            </div>
+
+            <!-- Step 2: Detailed Feedback -->
+            <div class="form-group">
+                <label for="comments" class="form-label">Your Comments:</label>
+                <textarea class="form-control custom-textarea" id="comments" name="comments" required></textarea>
+                <div class="invalid-feedback">Please provide your feedback.</div>
             </div>
         {% endfor %}
-    </div>
-    {% endif %}
-    
-    <form method="post" class="needs-validation" novalidate>
-        {% csrf_token %}
-        <div class="row">
-            {% for field in form %}
-    <p>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
-        {% if field.name == 'comment' %}
-            <textarea class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" rows="5" placeholder="Enter your comments here..."></textarea>
-        {% else %}
-            <input type="{{ field.field.widget.input_type }}" class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" placeholder="{{ field.help_text }}">
-        {% endif %}
-        {% if field.errors %}
-            <div class="invalid-feedback">
-                {{ field.errors|join:", " }}
-            </div>
-        {% endif %}
-    </p>
-{% endfor %}
-        </div>
         <button type="submit" class="btn btn-primary">Submit Feedback</button>
     </form>
 </div>
-{% endblock %}
+
+<style>
+    .feedback-card {
+        background: #f9f9f9;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: auto;
+    }
+    .star-rating {
+        direction: rtl;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        font-size: 40px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .star-rating input:checked ~ label {
+        color: #f9c74f;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #f9c74f;
+    }
+    .btn-submit {
+        display: block;
+        width: 150px;
+        margin: 5px auto;
+        padding: 10px;
+        font-size: 16px;
+        text-transform: capitalize;
+    }
+    .custom-textarea {
+        height: 150px;
+        width: 100%;
+    }
+</style>
+
+<script>
+    function updateAdjective(rating) {
+        let adjective = "";
+        switch (rating) {
+            case '1':
+                adjective = "Very Bad";
+                break;
+            case '2':
+                adjective = "Disappointing";
+                break;
+            case '3':
+                adjective = "Decent";
+                break;
+            case '4':
+                adjective = "Very Good";
+                break;
+            case '5':
+                adjective = "Excellent";
+                break;
+            default:
+                adjective = "Select a rating";
+        }
+        document.getElementById("rating-adjective").innerText = adjective;
+    }
+</script>
+
+{% endblock content %}

@@ -1,20 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm, PhoneNumberForm
-from .models import OtpToken
+from .models import OtpToken, Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from collections import defaultdict
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
-from .models import Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
 from django.views.decorators.csrf import csrf_exempt
@@ -24,9 +23,13 @@ from notifications.models import Notification
 import json
 from datetime import datetime
 import base64
+import matplotlib
+matplotlib.use('Agg') # Use the Agg backend for non-interactive plots
+import matplotlib.pyplot as plt
+from io import BytesIO
 import json
 import requests
-import io
+import io 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -187,7 +190,6 @@ def login_user(request):
 def admin(request):
     # Ensure only superusers can access this view
     if not request.user.is_superuser:
-        # Redirect to regular home page or handle unauthorized access
         messages.error(request, "You are not authorized to view this page.")
         return redirect('index')
 
@@ -195,11 +197,18 @@ def admin(request):
     total_buses = Bus.objects.count()
     total_routes = Route.objects.count()
     total_schedules = Schedule.objects.count()
-    buses = Bus.objects.all()
+    average_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
+    
+    # Update to count the capacities
+    capacity_counts = Bus.objects.values('capacity').annotate(count=Count('id'))
     bus_data = {
-        "labels": [bus.busNumber for bus in buses],
-        "data": [bus.capacity for bus in buses],
+        "labels": [f'Capacity {capacity["capacity"]}' for capacity in capacity_counts],
+        "data": [capacity['count'] for capacity in capacity_counts],
     }
+
+    # Round the average rating to a whole number if it exists
+    if average_rating is not None:
+        average_rating = round(average_rating)
 
     context = {
         'total_users': total_users,
@@ -207,6 +216,7 @@ def admin(request):
         'total_routes': total_routes,
         'total_schedules': total_schedules,
         'bus_data': json.dumps(bus_data),
+        'avg_rating': average_rating,
     }
 
     return render(request, 'admin_template.html', context)
@@ -214,54 +224,48 @@ def admin(request):
 def user_stats(request):
     # Fetch all users
     users = User.objects.all()
-    print("Fetched Users:", users)
 
-    # Aggregate data monthly
+    # Aggregate data daily
     today = datetime.today()
-    months = [today - timedelta(days=30*i) for i in range(12)]
-    print("Months:", months)
-    
-    monthly_user_counts = defaultdict(int)
+    days = [today - timedelta(days=i) for i in range(365)]
+
+    daily_user_counts = defaultdict(int)
 
     for user in users:
-        month = user.date_joined.strftime('%Y-%m')
-        monthly_user_counts[month] += 1
+        day = user.date_joined.strftime('%Y-%m-%d')
+        daily_user_counts[day] += 1
 
-    print("Monthly User Counts:", dict(monthly_user_counts))
-
-    # Prepare data for Chart.js
-    sorted_months = sorted(monthly_user_counts.keys())
-    print("Sorted Months:", sorted_months)
-
+    # Prepare data for Matplotlib
+    sorted_days = sorted(daily_user_counts.keys())
     cumulative_user_counts = []
     cumulative_count = 0
 
-    for month in sorted_months:
-        cumulative_count += monthly_user_counts[month]
+    for day in sorted_days:
+        cumulative_count += daily_user_counts[day]
         cumulative_user_counts.append(cumulative_count)
 
-    print("Cumulative User Counts:", cumulative_user_counts)
+    # Create a line chart
+    plt.figure(figsize=(14, 10))
+    plt.plot(sorted_days, cumulative_user_counts, marker='o', linestyle='-', color='b')
 
-    data = {
-        'labels': sorted_months,
-        'datasets': [{
-            'label': 'Total Users',
-            'data': cumulative_user_counts,
-            'backgroundColor': 'rgba(75, 192, 192, 0.2)',
-            'borderColor': 'rgba(75, 192, 192, 1)',
-            'borderWidth': 1,
-            'fill': False
-        }]
-    }
+    # Add title and labels
+    plt.title('Cumulative User Growth', fontsize=30)
+    plt.xlabel('Day', fontsize=22)
+    plt.ylabel('Total Users', fontsize=24)
+    plt.xticks(rotation=45, fontsize=16, ha='right')  # Align labels to the right for better readability
+    plt.yticks(fontsize=20)
 
-    context = {
-        'chart_data': json.dumps(data),
-    }
+    # Adjust layout to fit all elements
+    plt.tight_layout()
 
-    print("Final Chart Data:", context['chart_data'])
+    # Save the plot to a BytesIO object
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
 
-    return render(request, 'user_stats.html', context)
-
+    return render(request, 'user_stats.html', {'chart': image_base64})
 
 def logout_user(request):
     if request.user.is_superuser:
@@ -575,19 +579,79 @@ def gender(request):
     other_count = Profile.objects.filter(gender='other').count()
 
     # Prepare data for the chart
-    gender_data = {
-        'labels': ['Male', 'Female', 'Other'],
-        'data': [male_count, female_count, other_count]
-    }
-    label = ['Male', 'Female', 'Other']
-    data = [male_count, female_count, other_count]
+    labels = ['Male', 'Female', 'Other']
+    counts = [male_count, female_count, other_count]
+    colors = ['#093f93', '#06763a', '#c80c0c']
 
-    # Convert gender_data to JSON string
-    gender_data_json = json.dumps(gender_data)
+    # Create a bar chart
+    plt.figure(figsize=(12, 8))
+    bars = plt.bar(labels, counts, color=colors)
 
-    return render(request, 'gender.html', {'gender_data': gender_data_json,
-                                           'label': label,
-                                           'data': data})
+    # Add title and labels with increased font size
+    plt.title('Gender Distribution', fontsize=30)
+    plt.xlabel('Gender', fontsize=26)
+    plt.ylabel('Count', fontsize=26)
+    plt.ylim(0, max(counts) + 10)  # Adjust y-axis limits
+
+    # Increase font size for ticks
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    # Add the value on top of each bar with increased font size
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2.0, yval, int(yval), va='bottom', fontsize=18, ha='center')  # ha: horizontal alignment
+
+    # Save the plot to a BytesIO object
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+
+    return render(request, 'gender.html', {'chart': image_base64})
+
+@login_required
+def rating_distribution(request):
+    # Aggregate ratings
+    feedback_list = Feedback.objects.all()
+    rating_counts = defaultdict(int)
+
+    for feedback in feedback_list:
+        rating_counts[feedback.rating] += 1  # Assuming feedback has a `rating` field
+
+    # Prepare data for the chart
+    labels = [1, 2, 3, 4, 5]
+    counts = [rating_counts.get(rating, 0) for rating in labels]
+    colors = ['#093f93', '#06763a', '#c80c0c', '#f39c12', '#e74c3c']
+
+    # Create a bar chart
+    plt.figure(figsize=(4, 2))  # Adjusted size for better fit
+    bars = plt.bar(labels, counts, color=colors)
+
+    # Add title and labels with increased font size
+    plt.title('User Ratings Distribution', fontsize=20)
+    plt.xlabel('Ratings', fontsize=12)
+    plt.ylabel('Number of Users', fontsize=12)
+    plt.ylim(0, max(counts) + 5)  # Adjust y-axis limits
+
+    # Increase font size for ticks
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    # Add the value on top of each bar
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2.0, yval, int(yval), va='bottom', fontsize=12, ha='center')
+
+    # Save the plot to a BytesIO object
+    buf = BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', dpi=100)
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    plt.close()
+
+    return render(request, 'rating_distribution.html', {'chart': image_base64})
 
 #customer views
 
@@ -992,6 +1056,26 @@ def add_booking(request):
 
      return render(request, 'add_booking.html')
 
+def edit_booking(request, booking_id):
+    booking = get_object_or_404(Booking, bookingID=booking_id)
+
+    if request.method == 'POST':
+        booking.seatNumber = request.POST.get('seatNumber')
+        booking.bookingDate = request.POST.get('bookingDate')
+        booking.totalPrice = request.POST.get('totalPrice')
+        booking.save()
+        return redirect('admin_template')  # Adjust to redirect to the desired page
+
+    return render(request, 'edit_booking.html', {'booking': booking})
+
+def delete_booking(request, booking_id):
+    booking = get_object_or_404(Booking, bookingID=booking_id)  # Use the correct field here
+    if request.method == 'POST':
+        booking.delete()
+        return redirect('bookings')  # Redirect to the bookings list after deletion
+    return render(request, 'delete_booking.html', {'booking': booking})
+
+
 
 def search_results(request):
     query = request.GET.get('q', '')
@@ -1022,13 +1106,16 @@ def submit_feedback(request):
         form = FeedbackForm(request.POST)
         if form.is_valid():
             feedback = form.save(commit=False)
-            feedback.user = request.user.profile
+            feedback.user = request.user.profile  # Assuming Profile is linked to User
             feedback.save()
-            return redirect('index')
+            return redirect('index')  # Redirect to the desired page
     else:
         form = FeedbackForm()
-    return render(request, 'submit_feedback.html', {'form': form})
 
+    # Create a list of stars with IDs
+    stars = [{'id': i, 'value': 6 - i} for i in range(1, 6)]  # Generates [{'id': 1, 'value': 5}, ..., {'id': 5, 'value': 1}]
+
+    return render(request, 'submit_feedback.html', {'form': form, 'stars': stars})
 
 @login_required
 def feedback_list(request):
