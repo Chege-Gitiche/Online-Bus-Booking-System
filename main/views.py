@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm, PhoneNumberForm
 from .models import OtpToken
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -20,6 +20,7 @@ from django_daraja.mpesa.core import MpesaClient
 from django.views.decorators.csrf import csrf_exempt
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
+from notifications.models import Notification
 import json
 from datetime import datetime
 import base64
@@ -31,6 +32,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Frame, PageTemplate
 from reportlab.lib import colors
+from .genrateAcesstoken import get_access_token
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -695,13 +697,13 @@ def booking_details(request, selected_seats):
     total_amount = fare * len(selected_seat_objects)
 
     if request.method == 'POST':
-        form = BookingForm(request.POST)
+        form = BookingDetailsForm(request.POST)
         if form.is_valid():
 
             print("Form is valid. Saving booking...")
 
             booking = Booking.objects.create(
-                user=request.user,
+                user=user_profile,
                 scheduleID=schedule,
                 seatNumber=seat_numbers,
                 totalPrice=total_amount
@@ -771,7 +773,7 @@ def booking(request):
     amount = 1
     account_reference = 'reference'
     transaction_desc = 'Description'
-    callback_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    callback_url = 'https://2810-197-237-29-99.ngrok-free.app/';
     response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
     
     if response.status_code == 200:
@@ -794,7 +796,7 @@ def mpesa_callback(request):
             access_token = access_token_response.content.decode('utf-8')
             access_token_json = json.loads(access_token)
             access_token = access_token_json.get('access_token')
-            query_url = 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query'
+            query_url = 'https://2810-197-237-29-99.ngrok-free.app/'
             business_short_code = '174379'
             timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
             passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
@@ -873,7 +875,7 @@ def admin(request):
     return render(request, 'admin_template.html', context)
 
 
-def generate_pdf(request, booking_id):
+def generate_pdf(request):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
 
@@ -1019,15 +1021,10 @@ def submit_feedback(request):
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
-            # Check if both fields are filled out
-            comment = form.cleaned_data.get('comment')  # Assuming 'comment' is a field in your form
-            rating = form.cleaned_data.get('rating')  # Assuming 'rating' is another field in your form
-            if comment and rating:  # Replace 'comment' and 'rating' with your actual field names
-                form.save()
-                messages.success(request, 'Feedback submitted successfully!')
-                return redirect('index')  # Redirect to a new URL
-            else:
-                messages.error(request, 'Please fill out all fields.')
+            feedback = form.save(commit=False)
+            feedback.user = request.user.profile
+            feedback.save()
+            return redirect('index')
     else:
         form = FeedbackForm()
     return render(request, 'submit_feedback.html', {'form': form})
@@ -1035,9 +1032,79 @@ def submit_feedback(request):
 
 @login_required
 def feedback_list(request):
-    feedback_list = Feedback.objects.all().order_by('-createdAt')  # Assuming you want the newest feedback first
+    feedback_list = Feedback.objects.all().order_by('-createdAt')
+      # Assuming you want the newest feedback first
     paginator = Paginator(feedback_list, 3)  # Show 10 feedbacks per page
 
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'feedback_list.html', {'page_obj': page_obj})
+    feedbacks = paginator.get_page(page_number)
+    return render(request, 'feedback_list.html', {'feedbacks': feedbacks})
+
+
+def mark_all_as_read(request):
+    if request.method == 'POST':
+        notifications = request.user.notifications.unread()
+        for notification in notifications:
+            notification.mark_as_read()
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'fail'}, status=400)
+
+
+@login_required
+def unread_notifications(request):
+    # Query for unread notifications
+    unread_notifications = request.user.notifications.all()
+
+    # Mark all as read
+    unread_notifications.mark_all_as_read()
+
+     # Set up pagination
+    paginator = Paginator(unread_notifications, 5)  # Show 10 notifications per page
+    page_number = request.GET.get('page')
+    notifications = paginator.get_page(page_number)
+
+    # Render the page with the notifications
+    context = {'notifications': notifications}
+    return render(request, 'unread_notifications.html', context)
+
+
+@login_required
+def booking_number(request):
+    if request.method == 'POST':
+        phone_form = PhoneNumberForm(request.POST)  # Handle phone form submission
+        if  phone_form.is_valid():
+            # Your existing logic for handling booking details form submission
+            phone_number = phone_form.cleaned_data['phone_number']
+            # Redirect to the booking view with phone number as a query parameter
+            return redirect(f'booking1?phone_number={phone_number}')
+    else:
+        phone_form = PhoneNumberForm()
+    return render(request, 'booking_number.html', {'phone_form': phone_form})
+
+
+def booking1(request):
+    phone_number = request.GET.get('phone_number', '')  # Retrieve the phone number from query parameters
+
+    cl = MpesaClient()
+    user_profile = Profile.objects.get(user=request.user)
+    # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
+    phone_number = phone_number
+    amount = 1
+    account_reference = 'reference'
+    transaction_desc = 'Description'
+    callback_url = 'https://onlinebooking-674d158e4ad6.herokuapp.com/';
+    response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+    
+    if response.status_code == 200:
+        messages.success(request, 'Payment prompt sent to your phone')
+         # Retrieve booking details from session
+        booking_details = request.session.get('booking_details')
+    
+    # Print the booking details to debug
+        print("Booking Details:", booking_details)
+        payment_success = True
+
+    else:
+        messages.error(request, 'Failed to send payment prompt to your phone')
+
+    return render(request, 'booking.html')

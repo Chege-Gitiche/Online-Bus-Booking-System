@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
 
@@ -53,11 +53,20 @@ urlpatterns= [
     path('lockscreen', views.lockscreen, name='lockscreen'),
 
     path('booking', views.booking, name='booking'),
-    path('generate_pdf/<int:booking_id>/', views.generate_pdf, name='generate_pdf'),
+    path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
+
+    path('inbox/notifications/', include('notifications.urls', namespace='notifications')),
+    path('notifications/mark-all-as-read/', views.mark_all_as_read, name='mark_all_as_read'),
+    path('notifications/unread/', views.unread_notifications, name='notifications_unread'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
 
     path('submit_feedback/', views.submit_feedback, name='submit_feedback'),
     path('feedback/', views.feedback_list, name='feedback_list'),
+
+    path('booking_number/', views.booking_number, name='booking_number'),
+    path('booking1/<int:phone_number>', views.booking1, name='booking'),
+
+    path('mpesa/', views.mpesa_callback, name='mpesa')
 ]

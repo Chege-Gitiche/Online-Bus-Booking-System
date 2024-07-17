@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_daraja',
     'django_heroku',
     'mpesa',
+    'notifications',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -92,7 +94,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -235,9 +239,5 @@ MPESA_CONFIG = {
 }
 
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
-django_heroku.settings(locals())
 

@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .models import Profile, Bus, Seat, Booking,Schedule
+from notifications.signals import notify
 
 user = get_user_model()
  
@@ -107,6 +108,8 @@ def schedule_bus_change(sender, instance, **kwargs):
                 user_profile = booking.user
                 # Send notification
                 send_bus_change_notification(user_profile, old_schedule.bus, instance.bus, instance)
+                notify.send(instance, recipient=user_profile.user, verb='bus reallocation', 
+                            description=f'Your bus for schedule {instance.scheduleID} has been changed from {old_schedule.bus.busNumber} to {instance.bus.busNumber}.')
 
 def send_bus_change_notification(user_profile, old_bus, new_bus, schedule):
     subject="Bus Reallocation notification"
@@ -134,4 +137,16 @@ def send_bus_change_notification(user_profile, old_bus, new_bus, schedule):
             receiver,
             fail_silently=False,
     )
-  
+
+
+
+@receiver(post_save, sender=Bus)
+def send_bus_status_change_notification(sender, instance, **kwargs):
+    # Get all bookings related to this bus
+    bookings = Booking.objects.filter(scheduleID__bus=instance)
+    
+    # Notify all users who have a booking on this bus
+    for booking in bookings:
+        user = booking.user.user  # Accessing the user from Profile model
+        notify.send(instance, recipient=user, verb='bus change notification',
+                                        description=f'The status of your bus {instance.busNumber} has changed to {instance.status}')

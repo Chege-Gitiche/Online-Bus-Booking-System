@@ -6,7 +6,7 @@
 
 <h1>Feedback List</h1>
 
-{% for feedback in page_obj %}
+{% for feedback in feedbacks %}
 <div class="container mt-5">
     <div class="row">
             <div class="col-md-4 mt-3">
@@ -28,21 +28,23 @@
 </div>
 {% endfor %}
 
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
-        
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-        </span>
-        
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
+<div class="mt-3">
+    {% if feedbacks.has_other_pages %}
+        <ul class="pagination">
+            {% if feedbacks.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ feedbacks.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            
+            {% if feedbacks.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ feedbacks.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ feedbacks.paginator.num_pages }}">Last &raquo;</a></li>
+            {% endif %}
+        </ul>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
+    </div>
 </div>
 {% endblock content %}              
