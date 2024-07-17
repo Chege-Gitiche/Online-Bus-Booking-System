@@ -129,9 +129,9 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'submit_feedback'%}" class="btn btn-primary my-2">Post feedback</a>
+                        <a href="{% url 'submit_feedback'%}" class="btn btn-primary my-2 text-capitalize">Post feedback</a>
 
-                        <a href="{% url 'feedback_list'%}" class="btn btn-primary my-2">View feedback</a>
+                        <a href="{% url 'feedback_list'%}" class="btn btn-primary my-2 text-capitalize">View feedback</a>
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

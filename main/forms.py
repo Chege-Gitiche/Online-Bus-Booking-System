@@ -63,4 +63,8 @@ class BusForm(forms.ModelForm):
 class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
-        fields = ['rating', 'comments']
+        fields = ['rating', 'comments', 'suggestions']  # Include suggestions field
+        widgets = {
+            'comments': forms.Textarea(attrs={'placeholder': 'Your comments...'}),
+            'suggestions': forms.Textarea(attrs={'placeholder': 'Any suggestions...'}),
+        }

@@ -1,10 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Booking</title>
+    <title>Edit Booking</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
         integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <style>
@@ -15,42 +16,36 @@
             border: 1px solid #ccc;
             border-radius: 10px;
         }
+
         .form-group label {
             font-weight: bold;
         }
     </style>
 </head>
+
 <body>
     <div class="container my-4">
-        <h4>Add Booking</h4>
-        <form method="post" class="form-container">
+        <h4>Edit Booking</h4>
+        <form method="post">
             {% csrf_token %}
             <div class="form-group">
                 <label for="user">User</label>
-                <select class="form-control" id="user" name="user" required>
-                    {% for profile in profiles %}
-                        <option value="{{ profile.id }}">{{ profile.username }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="scheduleID">Schedule</label>
-                <select class="form-control" id="scheduleID" name="scheduleID" required>
-                    {% for schedule in schedules %}
-                        <option value="{{ schedule.id }}">{{ schedule }}</option>
-                    {% endfor %}
-                </select>
+                <input type="text" class="form-control" id="user" name="user" value="{{ booking.user }}" required>
             </div>
             <div class="form-group">
                 <label for="seatNumber">Seat Number</label>
-                <input type="text" class="form-control" id="seatNumber" name="seatNumber" required>
+                <input type="text" class="form-control" id="seatNumber" name="seatNumber" value="{{ booking.seatNumber }}" required>
+            </div>
+            <div class="form-group">
+                <label for="bookingDate">Booking Date</label>
+                <input type="date" class="form-control" id="bookingDate" name="bookingDate" value="{{ booking.bookingDate }}" required>
             </div>
             <div class="form-group">
                 <label for="totalPrice">Total Price</label>
-                <input type="number" class="form-control" id="totalPrice" name="totalPrice" step="0.01" required>
+                <input type="number" class="form-control" id="totalPrice" name="totalPrice" value="{{ booking.totalPrice }}" required>
             </div>
-            <button type="submit" class="btn btn-primary">Add Booking</button>
-            <a href="{% url 'booking_form' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Update Booking</button>
+            <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 
@@ -61,4 +56,5 @@
         integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
         crossorigin="anonymous"></script>
 </body>
+
 </html>

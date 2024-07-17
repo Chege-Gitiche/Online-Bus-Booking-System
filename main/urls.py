@@ -7,6 +7,7 @@ urlpatterns= [
     path('home',views.index,name='index'),
     path('admin_template/', views.admin, name='admin_template'),
     path('user_stats/', views.user_stats, name='user_stats'),
+    path('rating_distribution/', views.rating_distribution, name='rating_distribution'),
     path('settings', views.settings, name='settings'),
 
     path('users', views.users, name='users'),
@@ -38,6 +39,8 @@ urlpatterns= [
     
     path('booking_form/', views.booking_form, name='booking_form'),
     path('booking_form/add/', views.add_booking, name='add_booking'),
+    path('edit_booking/<int:booking_id>/', views.edit_booking, name='edit_booking'),
+    path('delete_booking/<int:booking_id>/', views.delete_booking, name='delete_booking'),
 
     path('sign_up',views.signUp,name='sign_up'),
     path("verify-email/<slug:username>", views.verifyEmail, name="verify-email"),
@@ -53,7 +56,7 @@ urlpatterns= [
     path('lockscreen', views.lockscreen, name='lockscreen'),
 
     path('booking', views.booking, name='booking'),
-    path('generate_pdf/<int:booking_id>/', views.generate_pdf, name='generate_pdf'),
+    path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
 
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

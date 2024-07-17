@@ -37,17 +37,17 @@
                     <td>{{ booking.bookingDate }}</td>
                     <td>{{ booking.totalPrice }}</td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="">
+                        <a class="btn btn-info btn-sm" href="{% url 'edit_booking' booking.pk %}">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <a class="btn btn-danger btn-sm" href="">
+                        <a class="btn btn-danger btn-sm" href="{% url 'delete_booking' booking.pk %}">
                             <i class="fas fa-trash-alt"></i> Delete
                         </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">No buses found.</td>
+                    <td colspan="5" class="text-center">No booking found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -55,7 +55,7 @@
 
         <!-- Add Bus Button -->
         <a class="btn btn-primary" href="{% url 'add_booking' %}">
-            <i class="fas fa-plus"></i> Add Bus
+            <i class="fas fa-plus"></i> Add Booking
         </a>
         <a href="{% url 'admin_template' %}" class="btn btn-secondary">Cancel</a>
         <!-- End Add Bus Button -->

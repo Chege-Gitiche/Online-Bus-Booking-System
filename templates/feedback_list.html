@@ -1,32 +1,84 @@
 {% extends 'main/base.html' %}
 
-{% block title %}Booking Status{% endblock %}
+{% block title %}Feedback List{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    .comment {
+        font-weight: bold;
+        display: inline;
+    }
 
-<h1>Feedback List</h1>
+    .comment-details {
+        font-weight: normal;
+        display: inline;
+    }
 
-{% for feedback in page_obj %}
+    .suggestion {
+        font-weight: bold;
+        display: inline;
+    }
+
+    .suggestion-details {
+        font-weight: normal;
+        display: inline;
+    }
+
+    .feedback-card {
+        background: #f9f9f9;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: auto;
+    }
+
+    .card-body {
+        background-color: #ffffff;
+    }
+
+    .rating-text {
+        color: #050505;
+    }
+
+    .pagination a {
+        color: #007bff;
+    }
+
+    .pagination a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<h1 class="text-center mb-4">Feedback from Our Users</h1>
+
 <div class="container mt-5">
     <div class="row">
+        {% for feedback in page_obj %}
             <div class="col-md-4 mt-3">
-                <div class="card">
+                <div class="card feedback-card">
                     <div class="card-header">
-                        {{ feedback.user.user.username }}
+                        <strong>User:</strong> {{ feedback.user.user.username }}
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">Rating: {{ feedback.rating }}</h5>
-                        <p class="card-text">{{ feedback.comments }}</p>
+                        <p class="comment">Comment: 
+                            <span class="comment-details">{{ feedback.comments }}</span>
+                        </p>
+                        <p class="card-text rating-text"><strong>Rating:</strong> {{ feedback.rating }} / 5</p>
+                        <p class="suggestion">Suggestions: 
+                            <span class="suggestion-details">{{ feedback.suggestions }}</span>
+                        </p>
                     </div>
+                    <small class="text-muted">Submitted on: {{ feedback.createdAt|date:"F j, Y" }}</small>
                 </div>
             </div>
         {% empty %}
             <div class="col">
                 <p>No feedback submitted yet.</p>
             </div>
+        {% endfor %}
     </div>
 </div>
-{% endfor %}
 
 <div class="pagination">
     <span class="step-links">
@@ -45,4 +97,4 @@
         {% endif %}
     </span>
 </div>
-{% endblock content %}              
+{% endblock content %}

@@ -1,36 +1,30 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Statistics</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
 </head>
-<body>
-    <div class="container">
-        <h2>User Statistics</h2>
-        <canvas id="userChart" width="400" height="200"></canvas>
-    </div>
 
-    <pre>{{ chart_data|safe }}</pre>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var ctx = document.getElementById('userChart').getContext('2d');
-            var chartData = JSON.parse('{{ chart_data|escapejs }}');
-            console.log(chartData)
-            
-            var userChart = new Chart(ctx, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        });
-    </script>
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-10 p-5 bg-white rounded-lg shadow-lg max-w-4xl">
+        <h1 class="text-3xl font-bold leading-none text-gray-900 tracking-tight mt-3 mb-6 text-center">User Growth Statistics</h1>
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:60vh; width:100%">
+                            <img src="data:image/png;base64,{{ chart }}" alt="User Growth Chart" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
