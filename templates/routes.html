@@ -124,6 +124,13 @@
                 // Add more settings as needed
             });
         });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var dateInput = document.getElementById('date');
+            var today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+        });
+        
     </script>
 </body>
 </html>

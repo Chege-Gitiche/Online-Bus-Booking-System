@@ -202,6 +202,39 @@
             display: flex;
             gap: 10px;
         }
+        .center {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center align the content */
+}
+
+.image-div {
+    display: flex;
+    align-items: center; /* Center align the bus image */
+    justify-content: center; /* Center the content */
+    margin-bottom: 20px; /* Space below the image */
+}
+
+.back-button-container {
+    margin-top: 10px; /* Space above the button */
+    display: flex;
+    justify-content: center; /* Center align the button */
+}
+
+.back-button {
+    background-color: #007bff; /* Blue color */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.back-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
         
 
     </style>
@@ -222,10 +255,9 @@
                                 <div class="item">Booked</div>
                                 <div class="item">Selected</div>
                             </div>
-                            
+    
                             <div class="all-seats" id="seatContainer">
                                 <div class="image-div">
-                                    <div></div>
                                     <img src="{% static 'images/steering wheel.jpg' %}" class="bus-image">
                                 </div>
                                 {% for row in seat_rows %}
@@ -258,15 +290,19 @@
                         </div>
                     </div>
                     <div class="price">
-                        <div class="total">
-                            Total Amount: Ksh <span id="total-amount">0</span>
-                        </div>
+                        <div class="total">Total Amount: Ksh <span id="total-amount">0</span></div>
                         <button type="submit" class="book-btn">Book</button>
                     </div>
                 </form>
             </div>
         </div>
+        <!-- Back button outside the tickets div -->
+        <div class="back-button-container">
+            <a href="{% url 'search_view' %}" class="button back-button">Back</a>
+        </div>
     </div>
+    
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

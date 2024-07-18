@@ -33,9 +33,16 @@
                 <textarea class="form-control custom-textarea" id="comments" name="comments" required></textarea>
                 <div class="invalid-feedback">Please provide your feedback.</div>
             </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Submit Feedback</button>
-    </form>
+            
+            <!-- Suggestions -->
+            <div class="form-group">
+                <label for="suggestions" class="form-label">Any Suggestions?</label>
+                <textarea class="form-control custom-textarea" id="suggestions" name="suggestions"></textarea>
+            </div>            
+
+            <button type="submit" class="btn btn-submit">Submit Feedback</button>
+        </form>
+    </div>
 </div>
 
 <style>

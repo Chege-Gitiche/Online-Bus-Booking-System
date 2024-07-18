@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm, PhoneNumberForm
+from .forms import RegisterForm, LoginForm, BookingDetailsForm, BusForm ,BookingForm,FeedbackForm
 from .models import OtpToken, Profile, Route, Schedule, Bus, Seat, Booking,User,Feedback
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -520,7 +520,7 @@ def add_schedule(request):
             date=date
         )
 
-        return redirect('schedules')
+        return redirect('schedule')
 
     buses = Bus.objects.all()
     routes = Route.objects.all()
@@ -657,6 +657,11 @@ def rating_distribution(request):
 
 @login_required(login_url="/login")
 def routes_view(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    if not profile.phone_number:
+        messages.error(request, "Please update your phone number to proceed.")
+        return redirect('settings')
+        
     routes = Route.objects.all()
     return render(request, 'routes.html', {'routes': routes})
 
@@ -682,6 +687,10 @@ def search_view(request):
 
                 # Retrieve active buses associated with the schedules
                 buses = [schedule.bus for schedule in schedules]
+
+                # Calculate available seats for each bus
+                for bus in buses:
+                    bus.available_seats = Seat.objects.filter(bus=bus, is_available=True).count()
 
                 return render(request, 'search.html', {
                     'origin': origin,
@@ -834,7 +843,7 @@ def booking(request):
     user_profile = Profile.objects.get(user=request.user)
     # Use a Safaricom phone number that you have access to, for you to be able to view the prompt.
     phone_number = user_profile.phone_number
-    amount = 1
+    amount = 100
     account_reference = 'reference'
     transaction_desc = 'Description'
     callback_url = 'https://2810-197-237-29-99.ngrok-free.app/';
@@ -902,13 +911,14 @@ def mpesa_callback(request):
                 
                 return JsonResponse({'message': message})  # Return JSON response
             except Exception as e:
+   
                 return JsonResponse({'error': 'Error: ' + str(e)})  # Return JSON response for any other error
+
 
 @login_required
 def admin(request):
     # Ensure only superusers can access this view
     if not request.user.is_superuser:
-        # Redirect to regular home page or handle unauthorized access
         messages.error(request, "You are not authorized to view this page.")
         return redirect('index')
 
@@ -917,10 +927,12 @@ def admin(request):
     total_routes = Route.objects.count()
     total_schedules = Schedule.objects.count()
     average_rating = Feedback.objects.aggregate(Avg('rating'))['rating__avg']
-    buses = Bus.objects.all()
+    
+    # Update to count the capacities
+    capacity_counts = Bus.objects.values('capacity').annotate(count=Count('id'))
     bus_data = {
-        "labels": [bus.busNumber for bus in buses],
-        "data": [bus.capacity for bus in buses],
+        "labels": [f'Capacity {capacity["capacity"]}' for capacity in capacity_counts],
+        "data": [capacity['count'] for capacity in capacity_counts],
     }
 
     # Round the average rating to a whole number if it exists
@@ -966,7 +978,7 @@ def generate_pdf(request):
     trip_details = [
         ['Trip Details'],
         ['Bus:', 'KCY'],
-        ['Date:', '09-09-2014, 00:00'],
+        ['Date:', '07-24-2024, 00:00'],
         ['Departure from:', 'Nairobi'],
         ['Arrive to:', 'Kisumu'],
         ['Ticket Type:', 'Regular 1'],
@@ -994,7 +1006,7 @@ def generate_pdf(request):
         ['Customer and Booking Details'],
         ['Customer Name:', user.username],
         ['Phone:', profile.phone_number],
-        ['Booking Total:', '500'],
+        ['Booking Total:', '100'],
         ['Online Deposit Payment:', 'through cash'],
     ]
 
